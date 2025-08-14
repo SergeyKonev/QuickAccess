@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Access</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div id="main-area">
+        <!-- Текущий сайт -->
+        <div class="current-site">
+            <span id="currentSite">example.com</span>
+        </div>
+
+        <!-- Кнопки управления -->
+        <div class="action-buttons">
+            <button id="addCurrentPage" class="btn-icon" title="Добавить текущую страницу">+</button>
+            <button id="addBookmarkBtn" class="btn-icon" title="Новая закладка">🔗</button>
+            <button id="importExportBtn" class="btn-icon" title="Экспорт/Импорт">📤</button>
+        </div>
+
+        <!-- Список закладок -->
+        <div id="bookmarksList" class="bookmarks-list">
+            <!-- Закладки будут добавлены динамически -->
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления закладки -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Новая закладка</h3>
+                <button id="closeModal" class="btn-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <input type="text" id="newBookmarkName" placeholder="Название закладки" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <input type="text" id="newBookmarkPath" placeholder="/путь" maxlength="200">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelAdd" class="btn btn-secondary">Отмена</button>
+                <button id="confirmAdd" class="btn btn-primary">Добавить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно экспорта/импорта -->
+    <div id="importExportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Экспорт/Импорт закладок</h3>
+                <button id="closeImportExportModal" class="btn-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="export-section">
+                    <h4>Экспорт</h4>
+                    <p class="section-description">Сохранить закладки в файл</p>
+                    <button id="exportBtn" class="btn btn-primary full-width">Экспорт закладок</button>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="import-section">
+                    <h4>Импорт</h4>
+                    <p class="section-description">Загрузить закладки из файла</p>
+                    <button id="importBtn" class="btn btn-secondary full-width">Импорт закладок</button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                    <p class="import-note">Импорт добавит новые закладки к существующим</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div id="message" class="message"></div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
