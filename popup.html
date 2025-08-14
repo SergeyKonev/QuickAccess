@@ -17,6 +17,7 @@
         <div class="action-buttons">
             <button id="addCurrentPage" class="btn-icon" title="Добавить текущую страницу">+</button>
             <button id="addBookmarkBtn" class="btn-icon" title="Новая закладка">🔗</button>
+            <button id="openControllerLink" class="btn-icon btn-controller" title="Перейти на контроллер">🎛️</button>
             <button id="importExportBtn" class="btn-icon" title="Экспорт/Импорт">📤</button>
         </div>
 
@@ -78,6 +79,9 @@
     <!-- Уведомления -->
     <div id="message" class="message"></div>
 
+    <script src="settings.js"></script>
+    <script src="utils.js"></script>
     <script src="popup.js"></script>
+    <script src="content-scripts/controller-opener.js"></script>
 </body>
 </html>

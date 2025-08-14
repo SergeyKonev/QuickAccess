@@ -469,6 +469,39 @@ pre code {
   cursor: not-allowed;
 }
 
+/* Добавить в popup.css */
+.btn-controller {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-controller::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-controller:hover::before {
+    left: 100%;
+}
+
+.btn-controller:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-controller:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+}
+
 /* Form elements */
 .form-control {
   display: block;
