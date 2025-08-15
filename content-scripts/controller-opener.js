@@ -4,13 +4,9 @@ class ControllerOpener {
         this.browserAPI = typeof browser !== 'undefined' ? browser : chrome;
     }
 
-    // Функция для вывода ошибок в консоль и alert
+    // Функция для вывода ошибок в консоль
     printError(message) {
         console.error('ControllerOpener Error:', message);
-        // Также можно показать alert для пользователя
-        if (typeof alert !== 'undefined') {
-            alert('Ошибка: ' + message);
-        }
         // Или добавить в DOM, если есть элемент для сообщений
         try {
             const messageElement = document.getElementById('message');
