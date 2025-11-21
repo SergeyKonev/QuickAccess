@@ -1,1 +1,20 @@
+# Файлы настроек (могут содержать чувствительные данные)
 settings.js
+
+# Тестовые файлы
+test.html
+example-debug.php
+
+# Временные файлы
+*.tmp
+*.log
+
+# IDE файлы
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS файлы
+.DS_Store
+Thumbs.db

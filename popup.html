@@ -8,23 +8,44 @@
 </head>
 <body>
     <div id="main-area">
-        <!-- Текущий сайт -->
+    <!-- Вкладки навигации -->
+    <div class="tabs-navigation">
+        <button class="tab-button active" data-tab="bookmarks">Закладки</button>
+        <button class="tab-button" data-tab="snippets">Сниппеты</button>
+        <button id="importExportBtn" class="btn-icon btn-import-export" title="Экспорт/Импорт">📤</button>
+    </div>
+
+    <!-- Вкладка закладок -->
+    <div id="bookmarks-tab" class="tab-content active">
         <div class="current-site">
             <span id="currentSite">example.com</span>
         </div>
 
-        <!-- Кнопки управления -->
         <div class="action-buttons">
             <button id="addCurrentPage" class="btn-icon" title="Добавить текущую страницу">+</button>
             <button id="addBookmarkBtn" class="btn-icon" title="Новая закладка">🔗</button>
             <button id="openControllerLink" class="btn-icon btn-controller" title="Перейти на контроллер">🎛️</button>
-            <button id="importExportBtn" class="btn-icon" title="Экспорт/Импорт">📤</button>
         </div>
 
-        <!-- Список закладок -->
         <div id="bookmarksList" class="bookmarks-list">
             <!-- Закладки будут добавлены динамически -->
         </div>
+    </div>
+
+    <!-- Вкладка сниппетов -->
+    <div id="snippets-tab" class="tab-content">
+        <div class="current-site">
+            <span id="currentSiteSnippets">example.com</span>
+        </div>
+
+        <div class="action-buttons">
+            <button id="addSnippetBtn" class="btn-icon" title="Новый сниппет">📝</button>
+        </div>
+
+        <div id="snippetsList" class="snippets-list">
+            <!-- Сниппеты будут добавлены динамически -->
+        </div>
+    </div>
     </div>
 
     <!-- Модальное окно добавления закладки -->
@@ -49,17 +70,31 @@
         </div>
     </div>
 
-    <!-- Модальное окно экспорта/импорта -->
+    <!-- Универсальное модальное окно экспорта/импорта -->
     <div id="importExportModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Экспорт/Импорт закладок</h3>
+                <h3 class="modal-title" id="importExportTitle">Экспорт/Импорт</h3>
                 <button id="closeImportExportModal" class="btn-close">×</button>
             </div>
             <div class="modal-body">
+                <!-- Переключатель типа данных -->
+                <div class="data-type-selector">
+                    <label class="radio-option">
+                        <input type="radio" name="dataType" value="bookmarks" checked>
+                        <span class="radio-label">📚 Закладки</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="dataType" value="snippets">
+                        <span class="radio-label">📝 Сниппеты</span>
+                    </label>
+                </div>
+
+                <div class="divider"></div>
+
                 <div class="export-section">
                     <h4>Экспорт</h4>
-                    <p class="section-description">Сохранить закладки в файл</p>
+                    <p class="section-description" id="exportDescription">Сохранить закладки в файл</p>
                     <button id="exportBtn" class="btn btn-primary full-width">Экспорт закладок</button>
                 </div>
                 
@@ -67,11 +102,35 @@
                 
                 <div class="import-section">
                     <h4>Импорт</h4>
-                    <p class="section-description">Загрузить закладки из файла</p>
+                    <p class="section-description" id="importDescription">Загрузить закладки из файла</p>
                     <button id="importBtn" class="btn btn-secondary full-width">Импорт закладок</button>
                     <input type="file" id="importFile" accept=".json" style="display: none;">
-                    <p class="import-note">Импорт добавит новые закладки к существующим</p>
+                    <p class="import-note" id="importNote">Импорт добавит новые закладки к существующим</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления/редактирования сниппета -->
+    <div id="addSnippetModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 class="modal-title" id="snippetModalTitle">Новый сниппет</h3>
+                <button id="closeSnippetModal" class="btn-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="snippetName">Название сниппета:</label>
+                    <input type="text" id="snippetName" placeholder="Название сниппета" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="snippetCode">PHP код:</label>
+                    <textarea id="snippetCode" placeholder="<?php&#10;// Ваш PHP код здесь&#10;echo 'Hello World';" rows="10"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelSnippet" class="btn btn-secondary">Отмена</button>
+                <button id="confirmSnippet" class="btn btn-primary">Сохранить</button>
             </div>
         </div>
     </div>
@@ -83,5 +142,6 @@
     <script src="utils.js"></script>
     <script src="popup.js"></script>
     <script src="content-scripts/controller-opener.js"></script>
+    <script src="snippets.js"></script>
 </body>
 </html>

@@ -88,6 +88,14 @@ class CompactQuickBookmarks {
     }
 
     bindEvents() {
+        // Обработчики переключения вкладок
+        const tabButtons = document.querySelectorAll('.tab-button');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                this.switchTab(button.dataset.tab);
+            });
+        });
+
         // Существующие обработчики событий
         document.getElementById('addCurrentPage').addEventListener('click', () => {
             this.addCurrentPageAsBookmark();
@@ -98,7 +106,7 @@ class CompactQuickBookmarks {
         });
 
         document.getElementById('importExportBtn').addEventListener('click', () => {
-            this.openImportExportModal();
+            this.openUniversalImportExportModal();
         });
 
         document.getElementById('closeModal').addEventListener('click', () => {
@@ -118,7 +126,7 @@ class CompactQuickBookmarks {
         });
 
         document.getElementById('exportBtn').addEventListener('click', () => {
-            this.exportBookmarks();
+            this.handleUniversalExport();
         });
 
         document.getElementById('importBtn').addEventListener('click', () => {
@@ -126,7 +134,15 @@ class CompactQuickBookmarks {
         });
 
         document.getElementById('importFile').addEventListener('change', (e) => {
-            this.importBookmarks(e);
+            this.handleUniversalImport(e);
+        });
+
+        // Переключение типов данных в модальном окне
+        const dataTypeRadios = document.querySelectorAll('input[name="dataType"]');
+        dataTypeRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                this.updateImportExportLabels();
+            });
         });
 
         const inputs = [
@@ -348,17 +364,6 @@ class CompactQuickBookmarks {
         modal.classList.remove('show');
         document.getElementById('newBookmarkName').value = '';
         document.getElementById('newBookmarkPath').value = '';
-    }
-
-    openImportExportModal() {
-        const modal = document.getElementById('importExportModal');
-        modal.classList.add('show');
-    }
-
-    closeImportExportModal() {
-        const modal = document.getElementById('importExportModal');
-        modal.classList.remove('show');
-        document.getElementById('importFile').value = '';
     }
 
     async addBookmarkFromModal() {
@@ -610,6 +615,93 @@ class CompactQuickBookmarks {
         this.messageTimeout = setTimeout(() => {
             message.classList.remove('show');
         }, 3000);
+    }
+
+    switchTab(tabName) {
+        // Удаляем активный класс со всех кнопок вкладок
+        const tabButtons = document.querySelectorAll('.tab-button');
+        tabButtons.forEach(button => {
+            button.classList.remove('active');
+        });
+
+        // Скрываем все контенты вкладок
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabContents.forEach(content => {
+            content.classList.remove('active');
+        });
+
+        // Активируем выбранную вкладку
+        const activeButton = document.querySelector(`[data-tab="${tabName}"]`);
+        const activeContent = document.getElementById(`${tabName}-tab`);
+
+        if (activeButton) {
+            activeButton.classList.add('active');
+        }
+
+        if (activeContent) {
+            activeContent.classList.add('active');
+        }
+    }
+
+    openUniversalImportExportModal() {
+        const modal = document.getElementById('importExportModal');
+        modal.classList.add('show');
+        this.updateImportExportLabels();
+    }
+
+    closeImportExportModal() {
+        const modal = document.getElementById('importExportModal');
+        modal.classList.remove('show');
+        document.getElementById('importFile').value = '';
+    }
+
+    updateImportExportLabels() {
+        const selectedType = document.querySelector('input[name="dataType"]:checked')?.value || 'bookmarks';
+        const isSnippets = selectedType === 'snippets';
+        
+        // Обновляем заголовки и описания
+        document.getElementById('importExportTitle').textContent = 
+            isSnippets ? 'Экспорт/Импорт сниппетов' : 'Экспорт/Импорт закладок';
+        
+        document.getElementById('exportDescription').textContent = 
+            isSnippets ? 'Сохранить сниппеты в файл' : 'Сохранить закладки в файл';
+        
+        document.getElementById('importDescription').textContent = 
+            isSnippets ? 'Загрузить сниппеты из файла' : 'Загрузить закладки из файла';
+        
+        document.getElementById('importNote').textContent = 
+            isSnippets ? 'Импорт добавит новые сниппеты к существующим' : 'Импорт добавит новые закладки к существующим';
+        
+        // Обновляем текст кнопок
+        document.getElementById('exportBtn').textContent = 
+            isSnippets ? 'Экспорт сниппетов' : 'Экспорт закладок';
+        
+        document.getElementById('importBtn').textContent = 
+            isSnippets ? 'Импорт сниппетов' : 'Импорт закладок';
+    }
+
+    handleUniversalExport() {
+        const selectedType = document.querySelector('input[name="dataType"]:checked')?.value || 'bookmarks';
+        
+        if (selectedType === 'bookmarks') {
+            this.exportBookmarks();
+        } else if (selectedType === 'snippets' && window.snippetManager) {
+            window.snippetManager.exportSnippets();
+        } else {
+            this.showMessage('Менеджер сниппетов не загружен', 'error');
+        }
+    }
+
+    handleUniversalImport(event) {
+        const selectedType = document.querySelector('input[name="dataType"]:checked')?.value || 'bookmarks';
+        
+        if (selectedType === 'bookmarks') {
+            this.importBookmarks(event);
+        } else if (selectedType === 'snippets' && window.snippetManager) {
+            window.snippetManager.importSnippets(event);
+        } else {
+            this.showMessage('Менеджер сниппетов не загружен', 'error');
+        }
     }
 }
 
