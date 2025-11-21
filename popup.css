@@ -1830,3 +1830,138 @@ body {
     }
 }
 
+/* Стили для вкладки Kibana */
+.kibana-section {
+    padding: var(--space-16);
+    text-align: center;
+}
+
+.kibana-description {
+    margin-bottom: var(--space-20);
+}
+
+.kibana-description h3 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    margin-bottom: var(--space-8);
+}
+
+.kibana-description p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: 0;
+}
+
+.kibana-actions {
+    margin-bottom: var(--space-16);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+    align-items: center;
+}
+
+.btn-kibana {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-8);
+    padding: var(--space-12) var(--space-20);
+    border: none;
+    border-radius: var(--radius-base);
+    color: var(--color-white);
+    cursor: pointer;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-base);
+    transition: all var(--duration-fast) var(--ease-standard);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
+    min-width: 180px;
+}
+
+.btn-kibana-ru {
+    background: linear-gradient(135deg, #00bcd4 0%, #4dd0e1 100%);
+}
+
+.btn-kibana-ru:hover {
+    background: linear-gradient(135deg, #00acc1 0%, #26c6da 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 188, 212, 0.3);
+}
+
+.btn-kibana-com {
+    background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+}
+
+.btn-kibana-com:hover {
+    background: linear-gradient(135deg, #43a047 0%, #5cb85c 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn-kibana:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 188, 212, 0.2);
+}
+
+.btn-kibana:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring), 0 2px 4px rgba(0, 188, 212, 0.2);
+}
+
+.kibana-icon {
+    font-size: var(--font-size-lg);
+}
+
+.kibana-text {
+    font-weight: var(--font-weight-medium);
+}
+
+.kibana-info {
+    padding: var(--space-12);
+    background: var(--color-secondary);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--color-info);
+}
+
+.info-text {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: var(--line-height-normal);
+}
+
+/* Мобильные стили для Kibana */
+@media (max-width: 480px) {
+    .kibana-section {
+        padding: var(--space-12);
+    }
+
+    .kibana-description h3 {
+        font-size: var(--font-size-base);
+        margin-bottom: var(--space-6);
+    }
+
+    .kibana-description p {
+        font-size: var(--font-size-xs);
+    }
+
+    .kibana-actions {
+        gap: var(--space-10);
+    }
+
+    .btn-kibana {
+        padding: var(--space-10) var(--space-16);
+        font-size: var(--font-size-sm);
+        min-width: 160px;
+    }
+
+    .kibana-icon {
+        font-size: var(--font-size-base);
+    }
+
+    .kibana-info {
+        padding: var(--space-10);
+    }
+}
+

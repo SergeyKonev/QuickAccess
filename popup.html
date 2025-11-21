@@ -12,6 +12,7 @@
     <div class="tabs-navigation">
         <button class="tab-button active" data-tab="bookmarks">Закладки</button>
         <button class="tab-button" data-tab="snippets">Сниппеты</button>
+        <button class="tab-button" data-tab="kibana">Kibana</button>
         <button id="importExportBtn" class="btn-icon btn-import-export" title="Экспорт/Импорт">📤</button>
     </div>
 
@@ -44,6 +45,36 @@
 
         <div id="snippetsList" class="snippets-list">
             <!-- Сниппеты будут добавлены динамически -->
+        </div>
+    </div>
+
+    <!-- Вкладка Kibana -->
+    <div id="kibana-tab" class="tab-content">
+        <div class="current-site">
+            <span id="currentSiteKibana">example.com</span>
+        </div>
+
+        <div class="kibana-section">
+            <div class="kibana-description">
+                <h3>Kibana Logs</h3>
+                <p>Просмотр логов текущего портала в Kibana</p>
+            </div>
+            
+            <div class="kibana-actions">
+                <button id="openKibanaRuBtn" class="btn-kibana btn-kibana-ru" title="Открыть Kibana RU для текущего портала">
+                    <span class="kibana-icon">📊</span>
+                    <span class="kibana-text">Kibana RU</span>
+                </button>
+                
+                <button id="openKibanaComBtn" class="btn-kibana btn-kibana-com" title="Открыть Kibana COM для текущего портала">
+                    <span class="kibana-icon">📈</span>
+                    <span class="kibana-text">Kibana COM</span>
+                </button>
+            </div>
+
+            <div class="kibana-info">
+                <p class="info-text">Будет открыта Kibana с фильтром по текущему домену</p>
+            </div>
         </div>
     </div>
     </div>
@@ -143,5 +174,6 @@
     <script src="popup.js"></script>
     <script src="content-scripts/controller-opener.js"></script>
     <script src="snippets.js"></script>
+    <script src="kibana.js"></script>
 </body>
 </html>
