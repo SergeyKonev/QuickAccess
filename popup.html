@@ -59,24 +59,36 @@
                 <h3>Kibana Logs</h3>
                 <p>Просмотр логов текущего портала в Kibana</p>
             </div>
-            
+
             <div class="kibana-actions">
-                <button id="openKibanaRuBtn" class="btn-kibana btn-kibana-ru" title="Открыть Kibana RU для текущего портала">
-                    <span class="kibana-icon">📊</span>
-                    <span class="kibana-text">Kibana RU</span>
-                </button>
-                
-                <button id="openKibanaComBtn" class="btn-kibana btn-kibana-com" title="Открыть Kibana COM для текущего портала">
-                    <span class="kibana-icon">📈</span>
-                    <span class="kibana-text">Kibana COM</span>
-                </button>
+                <div class="kibana-dropdown" id="kibanaDropdown">
+                    <div>
+                        <button id="openKibanaBtn" class="btn-kibana btn-kibana-main" title="Открыть Kibana для текущего портала">
+                            <span class="kibana-icon">📊</span>
+                            <span class="kibana-text">Открыть Kibana</span>
+                        </button>
+                        <button id="openKibanaToggle" class="btn-kibana btn-kibana-toggle" title="Выбрать версию Kibana">
+                            <span class="kibana-arrow">▼</span>
+                        </button>
+                    </div>
+
+                    <div id="kibanaDropdownMenu" class="kibana-dropdown-menu">
+                        <button id="openKibanaRuBtn" class="btn-kibana btn-kibana-ru" title="Открыть Kibana RU для текущего портала">
+                            <span class="kibana-icon">🇷🇺</span>
+                            <span class="kibana-text">Kibana RU</span>
+                        </button>
+                        <button id="openKibanaComBtn" class="btn-kibana btn-kibana-com" title="Открыть Kibana COM для текущего портала">
+                            <span class="kibana-icon">🌐</span>
+                            <span class="kibana-text">Kibana COM</span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="kibana-info">
                 <p class="info-text">Будет открыта Kibana с фильтром по текущему домену</p>
             </div>
         </div>
-    </div>
     </div>
 
     <!-- Модальное окно добавления закладки -->

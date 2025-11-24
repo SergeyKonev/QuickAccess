@@ -47,6 +47,33 @@ class KibanaManager {
     }
 
     bindEvents() {
+        // Кнопка переключения дропдауна
+        const toggleBtn = document.getElementById('openKibanaToggle');
+        const dropdown = document.getElementById('kibanaDropdown');
+        
+        if (toggleBtn && dropdown) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('open');
+            });
+        }
+
+        // Закрытие дропдауна при клике вне его
+        document.addEventListener('click', (e) => {
+            if (dropdown && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('open');
+            }
+        });
+
+        // Основная кнопка Kibana (открывает RU по умолчанию)
+        const openKibanaBtn = document.getElementById('openKibanaBtn');
+        if (openKibanaBtn) {
+            openKibanaBtn.addEventListener('click', async () => {
+                const urlKey = await this.getKibanaForThisSite(this.currentSite);
+                this.openKibana(urlKey, 'Kibana AUTO');
+            });
+        }
+
         // Кнопка открытия Kibana RU
         const openKibanaRuBtn = document.getElementById('openKibanaRuBtn');
         if (openKibanaRuBtn) {
@@ -61,6 +88,21 @@ class KibanaManager {
             openKibanaComBtn.addEventListener('click', () => {
                 this.openKibana('kibana_com_url', 'Kibana COM');
             });
+        }
+    }
+
+    async getKibanaForThisSite(siteUrl) {
+        if (siteUrl.includes("bxcreate") 
+            || siteUrl.includes("bxtest")) {
+            return "kibana_com_url";
+        }
+        else if (siteUrl.endsWith(".ru")
+        || siteUrl.endsWith(".by")
+        || siteUrl.endsWith(".kz")){
+            return "kibana_ru_url";
+        }
+        else {
+            return "kibana_com_url";
         }
     }
 
