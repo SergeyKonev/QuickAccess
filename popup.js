@@ -21,6 +21,7 @@ class CompactQuickBookmarks {
         await this.loadBookmarks();
         this.bindEvents();
         this.renderBookmarks();
+        this.populateTariffCoupons();
     }
 
     async loadCurrentSite() {
@@ -177,6 +178,13 @@ class CompactQuickBookmarks {
                 this.closeImportExportModal();
             }
         });
+
+        const activateTariffBtn = document.getElementById('activateTariffBtn');
+        if (activateTariffBtn) {
+            activateTariffBtn.addEventListener('click', () => {
+                this.activateTariffCoupon();
+            });
+        }
     }
 
     async addCurrentPageAsBookmark() {
@@ -615,6 +623,94 @@ class CompactQuickBookmarks {
         this.messageTimeout = setTimeout(() => {
             message.classList.remove('show');
         }, 3000);
+    }
+
+    populateTariffCoupons() {
+        const selectElement = document.getElementById('tariffCouponSelect');
+        if (!selectElement) return;
+
+        const coupons = settings?.license_coupons || [];
+        selectElement.innerHTML = '';
+
+        if (!coupons.length) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'Купоны не настроены';
+            option.disabled = true;
+            option.selected = true;
+            selectElement.appendChild(option);
+            return;
+        }
+
+        coupons.forEach(coupon => {
+            if (!coupon?.value || !coupon?.name) return;
+            const option = document.createElement('option');
+            option.value = coupon.value;
+            option.textContent = coupon.name;
+            selectElement.appendChild(option);
+        });
+    }
+
+    async activateTariffCoupon() {
+        const selectElement = document.getElementById('tariffCouponSelect');
+        if (!selectElement) return;
+
+        const coupon = selectElement.value;
+        if (!coupon) {
+            this.showMessage('Выберите тариф', 'error');
+            return;
+        }
+
+        try {
+            let tabs;
+            if (typeof browser !== 'undefined') {
+                tabs = await browserAPI.tabs.query({active: true, currentWindow: true});
+            } else {
+                tabs = await new Promise((resolve) => {
+                    browserAPI.tabs.query({active: true, currentWindow: true}, resolve);
+                });
+            }
+
+            const tabId = tabs?.[0]?.id;
+            if (!tabId) {
+                this.showMessage('Активная вкладка не найдена', 'error');
+                return;
+            }
+
+            if (!browserAPI.scripting?.executeScript) {
+                this.showMessage('API scripting недоступен', 'error');
+                return;
+            }
+
+            const results = await browserAPI.scripting.executeScript({
+                target: { tabId },
+                world: 'MAIN',
+                args: [coupon],
+                func: (couponValue) => {
+                    try {
+                        if (!window.BX?.ajax?.runAction) {
+                            return { ok: false, error: 'BX.ajax.runAction недоступен' };
+                        }
+                        window.BX.ajax.runAction('bitrix24.v2.License.Coupon.activate', {
+                            data: { coupon: couponValue }
+                        });
+                        return { ok: true };
+                    } catch (error) {
+                        return { ok: false, error: error?.message || 'Ошибка выполнения' };
+                    }
+                }
+            });
+
+            const result = results?.[0]?.result;
+            if (result?.ok) {
+                this.showMessage('Команда активации отправлена. Перезагрузите вкладку через Ctrl+F5', 'success');
+            } else {
+                this.showMessage(result?.error || 'Не удалось выполнить активацию', 'error');
+            }
+        } catch (error) {
+            console.error('Ошибка активации тарифа:', error);
+            this.showMessage('Ошибка выполнения в активной вкладке', 'error');
+        }
     }
 
     switchTab(tabName) {
