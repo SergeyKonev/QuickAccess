@@ -13,6 +13,7 @@
         <button class="tab-button active" data-tab="bookmarks">Закладки</button>
         <button class="tab-button" data-tab="snippets">Сниппеты</button>
         <button class="tab-button" data-tab="kibana">Kibana</button>
+        <button class="tab-button" data-tab="tariffs">Тарифы</button>
         <button id="importExportBtn" class="btn-icon btn-import-export" title="Экспорт/Импорт">📤</button>
     </div>
 
@@ -89,6 +90,15 @@
                 <p class="info-text">Будет открыта Kibana с фильтром по текущему домену</p>
             </div>
         </div>
+    </div>
+
+    <!-- Вкладка Тарифов -->
+    <div id="tariffs-tab" class="tab-content">
+        <div class="form-group">
+            <label class="form-label" for="tariffCouponSelect">Тариф</label>
+            <select id="tariffCouponSelect" class="form-control"></select>
+        </div>
+        <button id="activateTariffBtn" class="btn btn-primary full-width">Активировать тариф</button>
     </div>
 
     <!-- Модальное окно добавления закладки -->
