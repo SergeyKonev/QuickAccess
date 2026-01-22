@@ -10,11 +10,29 @@
     "activeTab",
     "scripting"
   ],
+  "host_permissions": [
+    "https://etalon.bitrix24.ru/*"
+  ],
   
   "action": {
     "default_popup": "popup.html",
     "default_title": "Quick Access"
   },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://jabber.bx/bug_report_page.php",
+        "https://jabber.bx/bug_report_page.php"
+      ],
+      "js": [
+        "utils.js",
+        "content-scripts/mantis-version-checker.js"
+      ]
+    }
+  ],
   "web_accessible_resources": [
     {
       "resources": ["settings.js"],

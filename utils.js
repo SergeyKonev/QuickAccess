@@ -47,3 +47,50 @@ function reloadTabBypassCache(tabId)
         }
     });
 }
+
+function showToast(message, options = {})
+{
+    if (!message) return;
+
+    const {
+        duration = 4000,
+        background = '#d32f2f',
+        color = '#fff'
+    } = options;
+
+    const containerId = 'qa-etalon-toast-container';
+    let container = document.getElementById(containerId);
+    if (!container)
+    {
+        container = document.createElement('div');
+        container.id = containerId;
+        container.style.position = 'fixed';
+        container.style.right = '16px';
+        container.style.bottom = '16px';
+        container.style.zIndex = '2147483647';
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.gap = '8px';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.background = background;
+    toast.style.color = color;
+    toast.style.padding = '8px 12px';
+    toast.style.borderRadius = '6px';
+    toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+    toast.style.fontSize = '12px';
+    toast.style.maxWidth = '320px';
+    toast.style.wordBreak = 'break-word';
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+        if (container.childElementCount === 0)
+        {
+            container.remove();
+        }
+    }, duration);
+}
