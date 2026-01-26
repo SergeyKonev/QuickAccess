@@ -25,20 +25,13 @@
     {
       "matches": [
         "http://jabber.bx/bug_report_page.php",
-        "https://jabber.bx/bug_report_page.php"
-      ],
-      "js": [
-        "utils.js",
-        "content-scripts/mantis-version-checker.js"
-      ]
-    },
-    {
-      "matches": [
+        "https://jabber.bx/bug_report_page.php",
         "http://jabber.bx/bug_report_page_vue.php",
         "https://jabber.bx/bug_report_page_vue.php"
       ],
       "js": [
-        "content-scripts/mantis-vue-version-checker.js"
+        "utils.js",
+        "content-scripts/mantis-version-checker.js"
       ]
     }
   ],

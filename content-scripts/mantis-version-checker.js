@@ -6,6 +6,9 @@
 	const ETALON_URL = 'https://etalon.bitrix24.ru/aqua/aquaversion.php';
 	const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
 	const STYLE_ID = 'qa-etalon-version-style';
+	
+	// Определяем тип страницы
+	const isVuePage = () => window.location.pathname.includes('_vue.php');
 
 	const evaluateXPath = (xpath, context = document) => {
 		return document.evaluate(
@@ -65,6 +68,20 @@
 				background: #21808d;
 				box-shadow: 0 0 0 2px rgba(33, 128, 141, 0.2);
 			}
+			
+			/* Стили для темной темы (Vue версия) */
+			body.dark .qa-etalon-btn {
+				border: 1px solid rgba(255, 255, 255, 0.15);
+				background: rgba(255, 255, 255, 0.08);
+				color: #e8eaed;
+			}
+			body.dark .qa-etalon-btn:hover {
+				background: rgba(255, 255, 255, 0.12);
+				border-color: rgba(255, 255, 255, 0.25);
+			}
+			body.dark .qa-etalon-btn:active {
+				background: rgba(255, 255, 255, 0.16);
+			}
 		`;
 		document.head.appendChild(style);
 	};
@@ -74,6 +91,11 @@
 		if (typeof loading === 'boolean') {
 			button.disabled = loading;
 			button.dataset.loading = loading ? '1' : '0';
+			
+			// Обновляем текст для обеих версий
+			if (isVuePage()) {
+				button.textContent = loading ? 'Загрузка...' : 'Версия на эталоне';
+			}
 		}
 		if (message) {
 			button.title = message;
@@ -85,9 +107,10 @@
 		const button = document.createElement('button');
 		button.id = BUTTON_ID;
 		button.type = 'button';
-		button.className = 'button';
-		button.innerHTML = '<span>Версия на эталоне</span>';
+		button.className = isVuePage() ? 'qa-etalon-btn' : 'button';
+		button.innerHTML = isVuePage() ? 'Версия на эталоне' : '<span>Версия на эталоне</span>';
 		button.style.marginLeft = '8px';
+		button.title = 'Получить текущую версию модуля с эталона';
 		button.addEventListener('click', () => handleClick(button));
 		return button;
 	};
@@ -135,15 +158,68 @@
 		const version = versionNode ? versionNode.textContent.trim() : '';
 		return version || null;
 	};
+	
+	// Получение выбранной категории для Vue страницы
+	const getSelectedCategoryVue = () => {
+		const categoryLabel = Array.from(document.querySelectorAll('*')).find(el => 
+			el.textContent.trim() === 'Категория' && el.childNodes.length === 1
+		);
+
+		if (!categoryLabel) return null;
+
+		const container = categoryLabel.parentElement;
+		const selectedItems = container?.querySelector('.selected-items');
+		const selectedItem = selectedItems?.querySelector('.selected-item');
+
+		return selectedItem ? selectedItem.textContent.trim() : null;
+	};
+	
+	// Получение поля версии для Vue страницы
+	const getVersionInputVue = () => document.querySelector('input[placeholder="0.0.0"]');
+	
+	// Показ уведомления для Vue страницы
+	const showNotificationVue = (message, isError = false) => {
+		const notification = document.createElement('div');
+		notification.textContent = message;
+		notification.style.cssText = `
+			position: fixed;
+			top: 20px;
+			right: 20px;
+			background: ${isError ? '#f44336' : '#4CAF50'};
+			color: white;
+			padding: 12px 20px;
+			border-radius: 6px;
+			box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+			z-index: 10000;
+			font-size: 14px;
+		`;
+		document.body.appendChild(notification);
+		setTimeout(() => notification.remove(), 3000);
+	};
 
 	const handleClick = async (button) => {
-		const select = document.querySelector(CATEGORY_SELECT_SELECTOR);
-		const moduleName = select?.value?.trim();
-
-		if (!moduleName) {
-			setButtonState(button, { message: 'Категория не выбрана' });
-			showToastSafe('Категория не выбрана');
-			return;
+		let moduleName, versionInput;
+		
+		// Определяем версию страницы и получаем данные
+		if (isVuePage()) {
+			moduleName = getSelectedCategoryVue();
+			versionInput = getVersionInputVue();
+			
+			if (!moduleName) {
+				setButtonState(button, { message: 'Категория не выбрана' });
+				showNotificationVue('Пожалуйста, выберите категорию (модуль)', true);
+				return;
+			}
+		} else {
+			const select = document.querySelector(CATEGORY_SELECT_SELECTOR);
+			moduleName = select?.value?.trim();
+			versionInput = getTargetInput();
+			
+			if (!moduleName) {
+				setButtonState(button, { message: 'Категория не выбрана' });
+				showToastSafe('Категория не выбрана');
+				return;
+			}
 		}
 
 		setButtonState(button, { loading: true, message: 'Загрузка версии...' });
@@ -155,47 +231,86 @@
 			if (!version) {
 				const message = `Версия не найдена для ${moduleName}`;
 				setButtonState(button, { message });
-				showToastSafe(message);
+				if (isVuePage()) {
+					showNotificationVue(message, true);
+				} else {
+					showToastSafe(message);
+				}
 				return;
 			}
 
-			const input = getTargetInput();
-			if (!input) {
+			if (!versionInput) {
 				setButtonState(button, { message: 'Поле версии не найдено' });
-				showToastSafe('Поле версии не найдено');
+				if (isVuePage()) {
+					showNotificationVue('Поле версии не найдено', true);
+				} else {
+					showToastSafe('Поле версии не найдено');
+				}
 				return;
 			}
 
-			input.value = version;
-			input.dispatchEvent(new Event('input', { bubbles: true }));
-			input.dispatchEvent(new Event('change', { bubbles: true }));
+			versionInput.value = version;
+			versionInput.dispatchEvent(new Event('input', { bubbles: true }));
+			versionInput.dispatchEvent(new Event('change', { bubbles: true }));
 			setButtonState(button, { message: `Вставлена версия ${version}` });
+			
+			if (isVuePage()) {
+				showNotificationVue(`✓ Версия ${version} для ${moduleName} успешно вставлена`);
+			}
 		} catch (error) {
 			console.error('Ошибка получения версии с эталона:', error);
 			setButtonState(button, { message: 'Ошибка загрузки версии' });
-			showToastSafe('Ошибка загрузки версии');
+			if (isVuePage()) {
+				showNotificationVue('Ошибка при получении версии: ' + error.message, true);
+			} else {
+				showToastSafe('Ошибка загрузки версии');
+			}
 		} finally {
 			setButtonState(button, { loading: false });
 		}
 	};
 
 	const insertButtonIfNeeded = () => {
-		const td = getTargetTd();
-		if (!td) return false;
+		if (isVuePage()) {
+			// Логика для Vue версии
+			const versionInput = getVersionInputVue();
+			if (!versionInput) return false;
 
-		if (td.querySelector(`#${BUTTON_ID}`)) {
+			const container = versionInput.closest('.form-field-content, .form-input-container');
+			if (!container) return false;
+
+			if (container.querySelector(`#${BUTTON_ID}`)) {
+				return true;
+			}
+
+			const button = createButton();
+			const inputContainer = versionInput.parentElement;
+			if (inputContainer) {
+				inputContainer.appendChild(button);
+			} else {
+				container.appendChild(button);
+			}
+
+			return true;
+		} else {
+			// Логика для старой версии
+			const td = getTargetTd();
+			if (!td) return false;
+
+			if (td.querySelector(`#${BUTTON_ID}`)) {
+				return true;
+			}
+
+			const button = createButton();
+			const input = getTargetInput();
+			if (input?.parentElement) {
+				input.parentElement.appendChild(button);
+			} else {
+				td.appendChild(button);
+			}
+
 			return true;
 		}
-
-		const button = createButton();
-		const input = getTargetInput();
-		if (input?.parentElement) {
-			input.parentElement.appendChild(button);
-		} else {
-			td.appendChild(button);
-		}
-
-		return true;
 	};
 
 	const init = () => {
@@ -210,6 +325,17 @@
 		const root = document.documentElement || document.body;
 		if (root) {
 			observer.observe(root, { childList: true, subtree: true });
+		}
+		
+		// Для Vue версии: дополнительная проверка через интервал
+		if (isVuePage()) {
+			const intervalId = setInterval(() => {
+				if (insertButtonIfNeeded()) {
+					clearInterval(intervalId);
+				}
+			}, 1000);
+			
+			setTimeout(() => clearInterval(intervalId), 10000);
 		}
 	};
 
