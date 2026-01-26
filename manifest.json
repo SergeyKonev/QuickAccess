@@ -31,6 +31,15 @@
         "utils.js",
         "content-scripts/mantis-version-checker.js"
       ]
+    },
+    {
+      "matches": [
+        "http://jabber.bx/bug_report_page_vue.php",
+        "https://jabber.bx/bug_report_page_vue.php"
+      ],
+      "js": [
+        "content-scripts/mantis-vue-version-checker.js"
+      ]
     }
   ],
   "web_accessible_resources": [
