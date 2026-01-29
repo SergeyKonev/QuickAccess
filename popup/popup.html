@@ -41,6 +41,7 @@
         </div>
 
         <div class="action-buttons">
+            <button id="runCodeBtn" class="btn-icon" title="Выполнить PHP код">▶</button>
             <button id="addSnippetBtn" class="btn-icon" title="Новый сниппет">📝</button>
         </div>
 
@@ -160,6 +161,26 @@
                     <input type="file" id="importFile" accept=".json" style="display: none;">
                     <p class="import-note" id="importNote">Импорт добавит новые закладки к существующим</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно быстрого выполнения PHP кода -->
+    <div id="runCodeModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 class="modal-title">Выполнить PHP код</h3>
+                <button id="closeRunCodeModal" class="btn-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="runCodeInput">PHP код:</label>
+                    <textarea id="runCodeInput" placeholder="<?php&#10;// Ваш PHP код здесь&#10;echo 'Hello World';" rows="10"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelRunCode" class="btn btn-secondary">Отмена</button>
+                <button id="confirmRunCode" class="btn btn-primary">Выполнить</button>
             </div>
         </div>
     </div>

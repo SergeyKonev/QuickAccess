@@ -88,6 +88,54 @@ class SnippetManager {
     }
 
     bindEvents() {
+        // Кнопка быстрого выполнения кода
+        const runCodeBtn = document.getElementById('runCodeBtn');
+        if (runCodeBtn) {
+            runCodeBtn.addEventListener('click', () => {
+                this.openRunCodeModal();
+            });
+        }
+
+        // Модальное окно быстрого выполнения
+        const closeRunCodeModal = document.getElementById('closeRunCodeModal');
+        if (closeRunCodeModal) {
+            closeRunCodeModal.addEventListener('click', () => {
+                this.closeRunCodeModal();
+            });
+        }
+
+        const cancelRunCode = document.getElementById('cancelRunCode');
+        if (cancelRunCode) {
+            cancelRunCode.addEventListener('click', () => {
+                this.closeRunCodeModal();
+            });
+        }
+
+        const confirmRunCode = document.getElementById('confirmRunCode');
+        if (confirmRunCode) {
+            confirmRunCode.addEventListener('click', () => {
+                this.runCodeFromModal();
+            });
+        }
+
+        const runCodeModal = document.getElementById('runCodeModal');
+        if (runCodeModal) {
+            runCodeModal.addEventListener('click', (e) => {
+                if (e.target.id === 'runCodeModal') {
+                    this.closeRunCodeModal();
+                }
+            });
+        }
+
+        const runCodeInput = document.getElementById('runCodeInput');
+        if (runCodeInput) {
+            runCodeInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    this.runCodeFromModal();
+                }
+            });
+        }
+
         // Кнопка добавления сниппета
         const addSnippetBtn = document.getElementById('addSnippetBtn');
         if (addSnippetBtn) {
@@ -180,6 +228,37 @@ class SnippetManager {
         this.editingSnippetId = null;
     }
 
+    openRunCodeModal() {
+        const modal = document.getElementById('runCodeModal');
+        const codeInput = document.getElementById('runCodeInput');
+        
+        codeInput.value = '<?php\n// Ваш PHP код здесь\necho "Hello World";';
+        
+        modal.classList.add('show');
+        setTimeout(() => {
+            codeInput.focus();
+        }, 100);
+    }
+
+    closeRunCodeModal() {
+        const modal = document.getElementById('runCodeModal');
+        modal.classList.remove('show');
+    }
+
+    async runCodeFromModal() {
+        const codeInput = document.getElementById('runCodeInput');
+        const code = codeInput.value.trim();
+
+        if (!code) {
+            this.showMessage('Введите код для выполнения', 'error');
+            codeInput.focus();
+            return;
+        }
+
+        await this.executeCode(code);
+        this.closeRunCodeModal();
+    }
+
     async saveSnippetFromModal() {
         const nameInput = document.getElementById('snippetName');
         const codeInput = document.getElementById('snippetCode');
@@ -238,11 +317,16 @@ class SnippetManager {
     }
 
     async executeSnippet(snippet) {
+        console.log('Выполнение сниппета:', snippet.name);
+        await this.executeCode(snippet.code);
+    }
+
+    async executeCode(code) {
         try {
             // Проверяем доступность settings
             if (typeof settings === 'undefined') {
                 this.showMessage('Настройки (settings.js) не загружены', 'error');
-                console.error('Settings не загружены для выполнения сниппета');
+                console.error('Settings не загружены для выполнения кода');
                 return;
             }
 
@@ -255,28 +339,51 @@ class SnippetManager {
                 return;
             }
             
-            // Кодируем PHP код для передачи в URL
-            const encodedCode = encodeURIComponent(snippet.code);
+            // Получаем протокол и индекс текущей вкладки
+            let currentProtocol = 'https:';
+            let currentTabIndex = 0;
             
-            // Формируем URL для выполнения
-            const protocol = this.currentSite.includes('localhost') ? 'http://' : 'https://';
-            const executionUrl = `${protocol}${this.currentSite}${executionPath}?PHPCode=y&CODE=${encodedCode}`;
-            
-            console.log('Выполнение сниппета:', snippet.name);
-            console.log('URL выполнения:', executionUrl);
-            
-            // Открываем новую вкладку с выполнением кода
-            if (typeof browser !== 'undefined') {
-                await this.browserAPI.tabs.create({url: executionUrl});
-            } else {
-                this.browserAPI.tabs.create({url: executionUrl});
+            try {
+                let tabs;
+                if (typeof browser !== 'undefined') {
+                    tabs = await this.browserAPI.tabs.query({active: true, currentWindow: true});
+                } else {
+                    tabs = await new Promise((resolve) => {
+                        this.browserAPI.tabs.query({active: true, currentWindow: true}, resolve);
+                    });
+                }
+                if (tabs[0] && tabs[0].url) {
+                    const url = new URL(tabs[0].url);
+                    currentProtocol = url.protocol;
+                    currentTabIndex = tabs[0].index;
+                }
+            } catch (e) {
+                console.warn('Не удалось получить данные текущей вкладки:', e);
             }
             
-            // Закрываем popup
-            window.close();
+            // Кодируем PHP код для передачи в URL
+            const encodedCode = encodeURIComponent(code);
+            
+            // Формируем URL для выполнения
+            const executionUrl = `${currentProtocol}//${this.currentSite}${executionPath}?PHPCode=y&CODE=${encodedCode}`;
+            
+            console.log('URL выполнения:', executionUrl);
+            
+            // Открываем новую вкладку рядом с текущей, не переключаясь на неё
+            const createOptions = {
+                url: executionUrl,
+                index: currentTabIndex + 1,
+                active: false
+            };
+            
+            if (typeof browser !== 'undefined') {
+                await this.browserAPI.tabs.create(createOptions);
+            } else {
+                this.browserAPI.tabs.create(createOptions);
+            }
             
         } catch (error) {
-            console.error('Ошибка выполнения сниппета:', error);
+            console.error('Ошибка выполнения кода:', error);
             this.showMessage('Ошибка выполнения кода: ' + error.message, 'error');
         }
     }
