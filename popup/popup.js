@@ -3,6 +3,8 @@ class QuickAccessPopup {
     constructor() {
         this.currentSite = '';
         this.currentUrl = '';
+        this.currentProtocol = 'https:';
+        this.currentTabIndex = 0;
 
         this.messageService = new MessageService();
         this.bookmarkStore = new BookmarkStore();
@@ -47,14 +49,20 @@ class QuickAccessPopup {
                 const url = new URL(tabs[0].url);
                 this.currentSite = url.hostname;
                 this.currentUrl = tabs[0].url;
+                this.currentProtocol = url.protocol;
+                this.currentTabIndex = tabs[0].index;
             } else {
                 this.currentSite = 'localhost';
                 this.currentUrl = '';
+                this.currentProtocol = 'https:';
+                this.currentTabIndex = 0;
             }
         } catch (error) {
             console.error('Ошибка получения текущего сайта:', error);
             this.currentSite = 'localhost';
             this.currentUrl = '';
+            this.currentProtocol = 'https:';
+            this.currentTabIndex = 0;
         }
 
         const currentSiteEl = document.getElementById('currentSite');
@@ -213,16 +221,18 @@ class QuickAccessPopup {
 
     async openBookmark(path) {
         try {
-            const protocol = this.currentSite.includes('localhost') ? 'http://' : 'https://';
-            const url = `${protocol}${this.currentSite}${path}`;
+            const url = `${this.currentProtocol}//${this.currentSite}${path}`;
+            const createOptions = {
+                url,
+                index: this.currentTabIndex + 1,
+                active: false
+            };
 
             if (typeof browser !== 'undefined') {
-                await window.qaBrowser.browserAPI.tabs.create({ url });
+                await window.qaBrowser.browserAPI.tabs.create(createOptions);
             } else {
-                window.qaBrowser.browserAPI.tabs.create({ url });
+                window.qaBrowser.browserAPI.tabs.create(createOptions);
             }
-
-            window.close();
         } catch (error) {
             console.error('Ошибка открытия закладки:', error);
             this.messageService.show('Ошибка открытия страницы', 'error');
