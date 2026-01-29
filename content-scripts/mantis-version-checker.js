@@ -3,7 +3,6 @@
 	const TARGET_INPUT_XPATH = "//input[@name='custom_field_17']";
 	const TARGET_TD_XPATH = "//input[@name='custom_field_17']//ancestor::td";
 	const CATEGORY_SELECT_SELECTOR = "select[name='category']";
-	const ETALON_URL = 'https://etalon.bitrix24.ru/aqua/aquaversion.php';
 	const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
 	const STYLE_ID = 'qa-etalon-version-style';
 	
