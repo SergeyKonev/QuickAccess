@@ -88,11 +88,11 @@ class ControllerOpener {
             const controllerUrlWithPortalFilter = controllerUrlWithFilter.replace('{portalUri}', encodeURIComponent(portalLink));
             console.log('Финальный URL контроллера:', controllerUrlWithPortalFilter);
             
-            // Открываем новую вкладку с контроллером
+            // Открываем новую вкладку с контроллером в инкогнито
             if (typeof browser !== 'undefined') {
-                await this.browserAPI.tabs.create({ url: controllerUrlWithPortalFilter });
+                await this.browserAPI.windows.create({ incognito: true, url: controllerUrlWithPortalFilter });
             } else {
-                this.browserAPI.tabs.create({ url: controllerUrlWithPortalFilter });
+                this.browserAPI.windows.create({ incognito: true, url: controllerUrlWithPortalFilter });
             }
 
             console.log('Контроллер успешно открыт');
