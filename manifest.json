@@ -11,7 +11,8 @@
     "scripting"
   ],
   "host_permissions": [
-    "https://etalon.bitrix24.ru/*"
+    "https://etalon.bitrix24.ru/*",
+    "http://automatic.aquaterra.bx:33666/*"
   ],
   
   "action": {

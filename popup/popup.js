@@ -161,6 +161,14 @@ class QuickAccessPopup {
         document.getElementById('activateTariffBtn')?.addEventListener('click', () => {
             this.tariffController.activateTariffCoupon();
         });
+
+        document.getElementById('marketSubscribeBtn')?.addEventListener('click', () => {
+            this.tariffController.marketSubscription(1);
+        });
+
+        document.getElementById('marketUnsubscribeBtn')?.addEventListener('click', () => {
+            this.tariffController.marketSubscription(2);
+        });
     }
 
     async addCurrentPageAsBookmark() {

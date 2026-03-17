@@ -83,6 +83,51 @@
                 this.messageService?.show('Ошибка выполнения в активной вкладке', 'error');
             }
         }
+
+        async marketSubscription(action) {
+            const actionName = action === 1 ? 'установки' : 'снятия';
+
+            if (!settings?.market_subscription_url || !settings?.network_email || !settings?.network_password) {
+                this.messageService?.show('Настройки подписки маркета не заполнены в settings.js', 'error');
+                return;
+            }
+
+            try {
+                const tabs = await window.qaBrowser.queryActiveTab();
+                const tabUrl = tabs?.[0]?.url;
+                if (!tabUrl) {
+                    this.messageService?.show('Активная вкладка не найдена', 'error');
+                    return;
+                }
+
+                const hostname = new URL(tabUrl).hostname;
+                const portalUri = `https://${hostname}/`;
+
+                const result = await new Promise((resolve) => {
+                    chrome.runtime.sendMessage({
+                        type: 'MARKET_SUBSCRIPTION',
+                        url: settings.market_subscription_url,
+                        body: {
+                            PortalUri: portalUri,
+                            Action: action,
+                            Requester: {
+                                Email: settings.network_email,
+                                Password: settings.network_password
+                            }
+                        }
+                    }, resolve);
+                });
+
+                if (result?.success) {
+                    this.messageService?.show(`Подписка: ${result.text || 'OK'}`, 'success');
+                } else {
+                    this.messageService?.show(`Ошибка ${actionName} подписки: ${result?.error || 'Неизвестная ошибка'}`, 'error');
+                }
+            } catch (error) {
+                console.error(`Ошибка ${actionName} подписки маркета:`, error);
+                this.messageService?.show(`Ошибка ${actionName} подписки: ${error.message}`, 'error');
+            }
+        }
     }
 
     window.TariffController = TariffController;

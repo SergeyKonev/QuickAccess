@@ -13,6 +13,11 @@ const settings = {
         "DEMO_LICENSE"
     ],
     
+    // Подписка маркета — URL API и креды нетворка
+    market_subscription_url: "http://your-server.example.com:33666/controller/endpoint",
+    network_email: "your_email@bitrix.ru",
+    network_password: "your_password",
+
     // Путь для выполнения PHP кода (используется в сниппетах)
     // Этот путь должен существовать на вашем сервере и обрабатывать параметры:
     // ?PHPCode=y&CODE={закодированный_php_код}
