@@ -6,6 +6,8 @@ class SnippetManager {
         this.nextId = 1;
         this.editingSnippetId = null;
         this.messageTimeout = null;
+        this.draggedElement = null;
+        this.draggedIndex = -1;
         this.browserAPI = typeof browser !== 'undefined' ? browser : chrome;
         
         // Проверяем доступность settings при инициализации
@@ -519,7 +521,8 @@ class SnippetManager {
         }
 
         container.innerHTML = this.snippets.map((snippet) => `
-            <div class="snippet-item" data-snippet-id="${snippet.id}">
+            <div class="snippet-item" data-snippet-id="${snippet.id}" draggable="true">
+                <div class="drag-handle">⋮⋮</div>
                 <div class="snippet-content">
                     <div class="snippet-name">${this.escapeHtml(snippet.name)}</div>
                     <div class="snippet-preview">${this.escapeHtml(this.getCodePreview(snippet.code))}</div>
@@ -533,10 +536,17 @@ class SnippetManager {
         `).join('');
 
         // Привязываем события для каждого сниппета
-        this.snippets.forEach((snippet) => {
+        this.snippets.forEach((snippet, index) => {
             const element = container.querySelector(`[data-snippet-id="${snippet.id}"]`);
             if (!element) return;
             
+            // Drag and drop events
+            element.addEventListener('dragstart', (e) => this.handleDragStart(e, index));
+            element.addEventListener('dragover', (e) => this.handleDragOver(e, index));
+            element.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+            element.addEventListener('drop', (e) => this.handleDrop(e, index));
+            element.addEventListener('dragend', () => this.handleDragEnd());
+
             // Кнопка выполнения
             const executeBtn = element.querySelector('.btn-execute');
             if (executeBtn) {
@@ -574,6 +584,89 @@ class SnippetManager {
                 });
             }
         });
+    }
+
+    handleDragStart(e, index) {
+        this.draggedElement = e.target.closest('.snippet-item');
+        this.draggedIndex = index;
+        if (!this.draggedElement) return;
+        this.draggedElement.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', this.draggedElement.innerHTML);
+    }
+
+    handleDragOver(e, index) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+
+        const targetElement = e.target.closest('.snippet-item');
+        if (targetElement && targetElement !== this.draggedElement) {
+            const rect = targetElement.getBoundingClientRect();
+            const midY = rect.top + rect.height / 2;
+
+            if (e.clientY < midY) {
+                targetElement.classList.add('drag-over-top');
+                targetElement.classList.remove('drag-over-bottom');
+            } else {
+                targetElement.classList.add('drag-over-bottom');
+                targetElement.classList.remove('drag-over-top');
+            }
+        }
+    }
+
+    handleDragLeave(e) {
+        const targetElement = e.target.closest('.snippet-item');
+        if (targetElement) {
+            targetElement.classList.remove('drag-over-top', 'drag-over-bottom');
+        }
+    }
+
+    async handleDrop(e, targetIndex) {
+        e.preventDefault();
+
+        const targetElement = e.target.closest('.snippet-item');
+        if (!targetElement || this.draggedIndex === -1) {
+            this.clearDragStyles();
+            return;
+        }
+
+        const rect = targetElement.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        const insertIndex = e.clientY < midY ? targetIndex : targetIndex + 1;
+        const newIndex = this.draggedIndex < insertIndex ? insertIndex - 1 : insertIndex;
+
+        if (this.draggedIndex === newIndex) {
+            this.clearDragStyles();
+            return;
+        }
+
+        await this.reorderSnippets(this.draggedIndex, newIndex);
+        this.clearDragStyles();
+    }
+
+    handleDragEnd() {
+        this.clearDragStyles();
+    }
+
+    clearDragStyles() {
+        const items = document.querySelectorAll('.snippet-item');
+        items.forEach(item => {
+            item.classList.remove('dragging', 'drag-over-top', 'drag-over-bottom');
+        });
+        this.draggedElement = null;
+        this.draggedIndex = -1;
+    }
+
+    async reorderSnippets(fromIndex, toIndex) {
+        if (fromIndex === toIndex) return;
+        const item = this.snippets[fromIndex];
+        if (!item) return;
+        this.snippets.splice(fromIndex, 1);
+        this.snippets.splice(toIndex, 0, item);
+        
+        await this.saveSnippets();
+        this.renderSnippets();
+        this.showMessage('Порядок сниппетов изменен', 'success');
     }
 
     getCodePreview(code) {

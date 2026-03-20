@@ -2064,3 +2064,47 @@ body {
     }
 }
 
+/* Drag and Drop Styles */
+[draggable="true"] {
+    cursor: grab;
+}
+
+[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+.drag-handle {
+    cursor: grab;
+    padding: 0 var(--space-4);
+    color: var(--color-text-secondary);
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.5;
+    transition: opacity var(--duration-fast);
+}
+
+.bookmark-item:hover .drag-handle,
+.snippet-item:hover .drag-handle {
+    opacity: 1;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.dragging {
+    opacity: 0.6;
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-md);
+    transform: scale(0.98);
+}
+
+.drag-over-top {
+    border-top: 2px solid var(--color-primary) !important;
+}
+
+.drag-over-bottom {
+    border-bottom: 2px solid var(--color-primary) !important;
+}
