@@ -1,52 +1,59 @@
 // Пример файла настроек для расширения Quick Access
 // Скопируйте этот файл как shared/settings.js и измените настройки под свои нужды
+//
+// Чтобы добавить новую настройку — добавьте объект в массив settingsSchema.
+// Форма в табе настроек сгенерируется автоматически.
+//
+// Поддерживаемые типы полей:
+//   text     — обычный текстовый инпут
+//   password — инпут с маской
+//   coupons  — список пар {name, value} с кнопкой добавления
+//   ---      — строка-разделитель (просто '---' в массиве)
 
-const settings = {
-    // URL контроллера с подстановкой портала
-    // {portalUri} будет заменен на домен текущей страницы
-    controller_url_with_filter: "http://localhost:12345/controller?filter={portalUri}",
-    
-    // Купоны лицензий (используются в других модулях)
-    license_coupons: [
-        "TEST_COUPON_1",
-        "TEST_COUPON_2", 
-        "DEMO_LICENSE"
-    ],
-    
-    // Подписка маркета — URL API и креды нетворка
-    market_subscription_url: "http://your-server.example.com:33666/controller/endpoint",
-    network_email: "your_email@bitrix.ru",
-    network_password: "your_password",
+const settingsSchema = [
+    { key: 'controller_url_with_filter', label: 'URL контроллера', type: 'text',
+      value: "http://localhost:12345/controller?filter={portalUri}" },
 
-    // Путь для выполнения PHP кода (используется в сниппетах)
-    // Этот путь должен существовать на вашем сервере и обрабатывать параметры:
-    // ?PHPCode=y&CODE={закодированный_php_код}
-    php_execution_path: "/admin/debug.php",
-    
-    // Альтернативные варианты путей:
-    // php_execution_path: "/debug/execute.php"
-    // php_execution_path: "/tools/eval.php"  
-    // php_execution_path: "/dev/runner.php"
-    
-    // URL Kibana RU с подстановкой домена портала
-    // {portalUrl} будет заменен на домен текущей страницы (ВСЕ вхождения)
-    kibana_ru_url: "http://kibana-ru.example.com/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),index:'logstash-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:'host:\"{portalUrl}\" AND environment:\"{portalUrl}\"')),sort:!('@timestamp',desc))",
-    
-    // URL Kibana COM с подстановкой домена портала
-    // {portalUrl} будет заменен на домен текущей страницы (ВСЕ вхождения) 
-    kibana_com_url: "http://kibana-com.example.com/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),index:'logstash-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:'host:\"{portalUrl}\" AND region:\"com\"')),sort:!('@timestamp',desc))"
-    
-    // Примеры других URL Kibana:
-    // kibana_ru_url: "https://your-kibana-ru.com/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-15m,to:now))&_a=(columns:!(_source),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'logs-*',key:host,negate:!f,params:(query:'{portalUrl}'),type:phrase),query:(match:(host:(query:'{portalUrl}',type:phrase))))),index:'logs-*')"
-    // kibana_com_url: "http://elastic-com.local:5601/app/discover#/?_g=(time:(from:now-1h,to:now))&_a=(index:'filebeat-*',query:(match:(host:'{portalUrl}')))"
-    // 
-    // Пример с множественными заменами {portalUrl}:
-    // kibana_ru_url: "https://kibana-ru.com/app/discover#/?_g=(time:(from:now-30m,to:now))&_a=(query:(bool:(must:!((match:(host:'{portalUrl}')),(match:(environment:'{portalUrl}')),(match:(datacenter:'ru'))))))"
-};
+    { key: 'php_execution_path', label: 'Путь выполнения PHP', type: 'text',
+      value: "/admin/debug.php" },
 
-// Экспорт для использования в других модулях
+    { key: 'kibana_ru_url', label: 'Kibana RU URL', type: 'text',
+      value: "http://kibana-ru.example.com/app/kibana#/discover?query={portalUrl}" },
+
+    { key: 'kibana_com_url', label: 'Kibana COM URL', type: 'text',
+      value: "http://kibana-com.example.com/app/kibana#/discover?query={portalUrl}" },
+
+    '---',
+
+    { key: 'market_subscription_url', label: 'URL подписки маркета', type: 'text',
+      value: "http://your-server.example.com:33666/controller/endpoint" },
+
+    { key: 'network_email', label: 'Email нетворка', type: 'text',
+      value: "your_email@bitrix.ru" },
+
+    { key: 'network_password', label: 'Пароль нетворка', type: 'password',
+      value: "your_password" },
+
+    '---',
+
+    { key: 'license_coupons', label: 'Купоны лицензий', type: 'coupons',
+      value: [
+        { name: "Тестовый", value: "TEST_COUPON_1" },
+        { name: "Демо",     value: "DEMO_LICENSE" },
+      ] },
+];
+
+// Собираем плоский объект settings из схемы
+const settings = {};
+for (const item of settingsSchema) {
+    if (typeof item === 'string') continue;
+    settings[item.key] = item.value;
+}
+
+// Экспорт
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = settings;
+    module.exports = { settings, settingsSchema };
 } else if (typeof window !== 'undefined') {
     window.settings = settings;
+    window.settingsSchema = settingsSchema;
 }

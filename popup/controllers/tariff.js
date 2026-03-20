@@ -88,7 +88,7 @@
             const actionName = action === 1 ? 'установки' : 'снятия';
 
             if (!settings?.market_subscription_url || !settings?.network_email || !settings?.network_password) {
-                this.messageService?.show('Настройки подписки маркета не заполнены в settings.js', 'error');
+                this.messageService?.show('Настройки подписки маркета не заполнены (вкладка ⚙)', 'error');
                 return;
             }
 

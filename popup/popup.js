@@ -35,11 +35,18 @@ class QuickAccessPopup {
     }
 
     async init() {
+        // Загружаем настройки из storage поверх дефолтов до инициализации компонентов
+        await window.settingsLoader.loadSettings();
+
         await this.loadCurrentSite();
         await this.bookmarkStore.load();
         this.bindEvents();
         this.renderBookmarks();
         this.tariffController.populateTariffCoupons();
+
+        this.settingsController = new SettingsController({
+            messageService: this.messageService
+        });
     }
 
     async loadCurrentSite() {

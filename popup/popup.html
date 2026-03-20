@@ -14,6 +14,7 @@
         <button class="tab-button" data-tab="snippets">Сниппеты</button>
         <button class="tab-button" data-tab="kibana">Kibana</button>
         <button class="tab-button" data-tab="tariffs">Тарифы</button>
+        <button class="tab-button" data-tab="settings">⚙</button>
         <button id="importExportBtn" class="btn-icon btn-import-export" title="Экспорт/Импорт">📤</button>
     </div>
 
@@ -110,6 +111,11 @@
                 <button id="marketUnsubscribeBtn" class="btn btn-secondary" style="flex: 1;">Убрать</button>
             </div>
         </div>
+    </div>
+
+    <!-- Вкладка Настройки (форма генерируется динамически из settingsSchema) -->
+    <div id="settings-tab" class="tab-content">
+        <div id="settingsFormContainer" class="settings-section"></div>
     </div>
 
     <!-- Модальное окно добавления закладки -->
@@ -225,12 +231,14 @@
     <script src="../shared/settings.js"></script>
     <script src="../shared/utils.js"></script>
     <script src="services/browser.js"></script>
+    <script src="../shared/settings-loader.js"></script>
     <script src="services/message-service.js"></script>
     <script src="services/bookmark-store.js"></script>
     <script src="views/bookmark-list-view.js"></script>
     <script src="controllers/bookmark-modal.js"></script>
     <script src="controllers/import-export.js"></script>
     <script src="controllers/tariff.js"></script>
+    <script src="controllers/settings.js"></script>
     <script src="popup.js"></script>
     <script src="features/controller-opener.js"></script>
     <script src="features/snippets.js"></script>

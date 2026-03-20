@@ -2108,3 +2108,78 @@ body {
 .drag-over-bottom {
     border-bottom: 2px solid var(--color-primary) !important;
 }
+/* Settings tab */
+.settings-section {
+    padding: var(--space-12);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.settings-section .form-group {
+    margin-bottom: var(--space-12);
+}
+
+.settings-section .form-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-4);
+}
+
+.settings-section .form-control {
+    font-size: var(--font-size-sm);
+    padding: var(--space-6) var(--space-8);
+}
+
+.settings-divider {
+    margin: var(--space-12) 0;
+    border: none;
+    border-top: 1px solid var(--color-border);
+}
+
+.settings-actions {
+    display: flex;
+    gap: var(--space-8);
+    justify-content: flex-end;
+    margin-top: var(--space-16);
+}
+
+/* Coupon rows */
+.coupon-row {
+    display: flex;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+    align-items: center;
+}
+
+.coupon-row .coupon-name {
+    flex: 1;
+    min-width: 0;
+}
+
+.coupon-row .coupon-value {
+    flex: 2;
+    min-width: 0;
+}
+
+.coupon-row .btn-remove-coupon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-error);
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+    transition: opacity var(--duration-fast);
+}
+
+.coupon-row .btn-remove-coupon:hover {
+    opacity: 1;
+}
+
