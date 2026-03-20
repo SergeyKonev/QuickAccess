@@ -780,8 +780,8 @@ select.form-control {
 }
 
 body {
-    width: 320px;
-    min-width: 320px;
+    width: 370px;
+    min-width: 370px;
     min-height: 300px; /* Увеличено с 200px до 300px */
     max-height: 600px;
     font-family: var(--font-family-base);
@@ -1585,6 +1585,11 @@ body {
 .tab-button:focus-visible {
     outline: none;
     box-shadow: var(--focus-ring);
+}
+
+.tab-button[data-tab="settings"] {
+    flex: 0;
+    padding: var(--space-10) var(--space-8);
 }
 
 /* Кнопка экспорта/импорта в навигации */
