@@ -780,8 +780,8 @@ select.form-control {
 }
 
 body {
-    width: 370px;
-    min-width: 370px;
+    width: 420px;
+    min-width: 420px;
     min-height: 300px; /* Увеличено с 200px до 300px */
     max-height: 600px;
     font-family: var(--font-family-base);
