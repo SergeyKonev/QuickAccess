@@ -1673,6 +1673,18 @@ body {
     opacity: 1;
 }
 
+/* Переопределения для сохраненных опций, чтобы они не обрезались */
+#optionsPresetList .snippet-content {
+    max-width: calc(100% - 32px); /* Достаточно места для одной кнопки удаления */
+}
+
+#optionsPresetList .snippet-name,
+#optionsPresetList .snippet-preview {
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
 /* Кнопка выполнения */
 .btn-execute {
     width: var(--space-24);

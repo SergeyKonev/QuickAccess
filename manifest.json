@@ -12,7 +12,8 @@
   ],
   "host_permissions": [
     "https://etalon.bitrix24.ru/*",
-    "http://automatic.aquaterra.bx:33666/*"
+    "http://automatic.aquaterra.bx:33666/*",
+    "<all_urls>"
   ],
   
   "action": {

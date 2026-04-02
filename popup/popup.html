@@ -12,6 +12,7 @@
     <div class="tabs-navigation">
         <button class="tab-button active" data-tab="bookmarks">Закладки</button>
         <button class="tab-button" data-tab="snippets">Сниппеты</button>
+        <button class="tab-button" data-tab="options">Опции</button>
         <button class="tab-button" data-tab="kibana">Kibana</button>
         <button class="tab-button" data-tab="tariffs">Тарифы</button>
         <button class="tab-button" data-tab="settings">⚙</button>
@@ -48,6 +49,36 @@
 
         <div id="snippetsList" class="snippets-list">
             <!-- Сниппеты будут добавлены динамически -->
+        </div>
+    </div>
+
+    <!-- Вкладка Опций -->
+    <div id="options-tab" class="tab-content">
+        <div class="current-site">
+            <span id="currentSiteOptions">example.com</span>
+        </div>
+        
+        <div class="form-group" style="margin-top: 10px;">
+            <label class="form-label" for="optionModule">Модуль (module_id)</label>
+            <input type="text" id="optionModule" class="form-control" placeholder="Например: aiassistant" />
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="optionName">Название опции</label>
+            <input type="text" id="optionName" class="form-control" placeholder="Например: service_url" />
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="optionValue">Значение</label>
+            <input type="text" id="optionValue" class="form-control" placeholder="Новое значение" />
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 15px;">
+            <button id="getOptionBtn" class="btn btn-secondary" style="flex: 1;">Получить</button>
+            <button id="setOptionBtn" class="btn btn-primary" style="flex: 1;">Установить</button>
+            <button id="saveOptionPresetBtn" class="btn btn-secondary" style="flex: 0 0 auto; padding: 0 12px; font-size: 16px;" title="Сохранить пресет">💾</button>
+        </div>
+
+        <div id="optionsPresetList" class="snippets-list" style="margin-top: 20px;">
+            <!-- Пресеты будут добавлены динамически -->
         </div>
     </div>
 
@@ -242,6 +273,7 @@
     <script src="popup.js"></script>
     <script src="features/controller-opener.js"></script>
     <script src="features/snippets.js"></script>
+    <script src="features/options.js"></script>
     <script src="features/kibana.js"></script>
 </body>
 </html>
