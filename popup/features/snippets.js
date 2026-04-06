@@ -9,6 +9,7 @@ class SnippetManager {
         this.draggedElement = null;
         this.draggedIndex = -1;
         this.browserAPI = typeof browser !== 'undefined' ? browser : chrome;
+        this.isLoaded = false;
         
         // Проверяем доступность settings при инициализации
         if (typeof settings === 'undefined') {
@@ -21,6 +22,7 @@ class SnippetManager {
     async init() {
         await this.loadCurrentSite();
         await this.loadSnippets();
+        this.isLoaded = true;
         this.bindEvents();
         this.renderSnippets();
     }
@@ -46,12 +48,7 @@ class SnippetManager {
             console.error('Ошибка получения текущего сайта:', error);
             this.currentSite = 'localhost';
         }
-        
-        const currentSiteElement = document.getElementById('currentSiteSnippets');
-        if (currentSiteElement) {
-            currentSiteElement.textContent = this.currentSite;
-        }
-    }
+            }
 
     async loadSnippets() {
         try {

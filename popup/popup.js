@@ -71,11 +71,6 @@ class QuickAccessPopup {
             this.currentProtocol = 'https:';
             this.currentTabIndex = 0;
         }
-
-        const currentSiteEl = document.getElementById('currentSite');
-        if (currentSiteEl) {
-            currentSiteEl.textContent = this.currentSite;
-        }
     }
 
     bindEvents() {

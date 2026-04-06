@@ -39,12 +39,7 @@ class KibanaManager {
             console.error('Ошибка получения текущего сайта для Kibana:', error);
             this.currentSite = 'localhost';
         }
-        
-        const currentSiteElement = document.getElementById('currentSiteKibana');
-        if (currentSiteElement) {
-            currentSiteElement.textContent = this.currentSite;
-        }
-    }
+            }
 
     bindEvents() {
         // Кнопка переключения дропдауна

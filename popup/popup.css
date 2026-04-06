@@ -788,7 +788,6 @@ body {
     font-size: var(--font-size-base);
     color: var(--color-text);
     background: var(--color-background);
-    overflow-x: hidden; /* Предотвращаем горизонтальный скролл */
 }
 
 /* Основная область */
@@ -861,27 +860,21 @@ body {
 }
 
 /* Список закладок */
-.bookmarks-list {
-    max-height: 400px;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-.bookmarks-list::-webkit-scrollbar {
+::-webkit-scrollbar {
     width: var(--space-6);
 }
 
-.bookmarks-list::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
     background: var(--color-secondary);
     border-radius: var(--radius-sm);
 }
 
-.bookmarks-list::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
     background: var(--color-border);
     border-radius: var(--radius-sm);
 }
 
-.bookmarks-list::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
     background: var(--color-text-secondary);
 }
 
@@ -1610,11 +1603,6 @@ body {
 }
 
 /* Стили для сниппетов */
-.snippets-list {
-    max-height: 300px;
-    overflow-y: auto;
-}
-
 .snippet-item {
     display: flex;
     align-items: center;
@@ -2198,5 +2186,35 @@ body {
 
 .coupon-row .btn-remove-coupon:hover {
     opacity: 1;
+}
+
+/* Expanding modal styles */
+.modal-large {
+    width: 90%;
+    max-width: 400px;
+    height: 90%;
+    max-height: 550px;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-large .modal-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.modal-large .modal-body .form-group:last-child {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+}
+
+.modal-large textarea {
+    flex: 1;
+    min-height: 150px;
+    resize: none;
 }
 

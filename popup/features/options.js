@@ -38,12 +38,7 @@ class OptionsManager {
             console.error('Ошибка получения текущего сайта:', error);
             this.currentSite = 'localhost';
         }
-        
-        const currentSiteElement = document.getElementById('currentSiteOptions');
-        if (currentSiteElement) {
-            currentSiteElement.textContent = this.currentSite;
-        }
-    }
+            }
 
     async loadState() {
         try {
