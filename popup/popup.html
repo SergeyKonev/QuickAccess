@@ -179,34 +179,20 @@
                 <button id="closeImportExportModal" class="btn-close">×</button>
             </div>
             <div class="modal-body">
-                <!-- Переключатель типа данных -->
-                <div class="data-type-selector">
-                    <label class="radio-option">
-                        <input type="radio" name="dataType" value="bookmarks" checked>
-                        <span class="radio-label">📚 Закладки</span>
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="dataType" value="snippets">
-                        <span class="radio-label">📝 Сниппеты</span>
-                    </label>
-                </div>
-
-                <div class="divider"></div>
-
                 <div class="export-section">
                     <h4>Экспорт</h4>
-                    <p class="section-description" id="exportDescription">Сохранить закладки в файл</p>
-                    <button id="exportBtn" class="btn btn-primary full-width">Экспорт закладок</button>
+                    <p class="section-description" id="exportDescription">Сохранить все данные расширения (настройки, закладки, сниппеты) в файл</p>
+                    <button id="exportBtn" class="btn btn-primary full-width">Экспорт всех данных</button>
                 </div>
                 
                 <div class="divider"></div>
                 
                 <div class="import-section">
                     <h4>Импорт</h4>
-                    <p class="section-description" id="importDescription">Загрузить закладки из файла</p>
-                    <button id="importBtn" class="btn btn-secondary full-width">Импорт закладок</button>
+                    <p class="section-description" id="importDescription">Загрузить данные из файла</p>
+                    <button id="importBtn" class="btn btn-secondary full-width">Импорт данных</button>
                     <input type="file" id="importFile" accept=".json" style="display: none;">
-                    <p class="import-note" id="importNote">Импорт добавит новые закладки к существующим</p>
+                    <p class="import-note" id="importNote">Импорт перезапишет существующие данные и объединит закладки со сниппетами.</p>
                 </div>
             </div>
         </div>
