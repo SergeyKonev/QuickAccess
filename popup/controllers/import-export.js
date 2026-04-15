@@ -28,27 +28,53 @@
 
         async handleExport() {
             try {
+                const exportSettings = document.getElementById('exportSettings')?.checked;
+                const exportBookmarks = document.getElementById('exportBookmarks')?.checked;
+                const exportSnippets = document.getElementById('exportSnippets')?.checked;
+
+                if (!exportSettings && !exportBookmarks && !exportSnippets) {
+                    this.messageService?.show('Выберите хотя бы один тип данных', 'error');
+                    return;
+                }
+
                 this.messageService?.show('Подготовка к экспорту...', 'info');
 
-                let storageData = {};
                 const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
-                if (typeof browser !== 'undefined') {
-                    storageData = await browserAPI.storage.local.get(null);
-                } else {
-                    storageData = await new Promise(resolve => browserAPI.storage.local.get(null, resolve));
+                const storageData = {};
+
+                if (exportBookmarks) {
+                    let result;
+                    if (typeof browser !== 'undefined') {
+                        result = await browserAPI.storage.local.get(['quickBookmarks']);
+                    } else {
+                        result = await new Promise(resolve => browserAPI.storage.local.get(['quickBookmarks'], resolve));
+                    }
+                    if (result.quickBookmarks) {
+                        storageData.quickBookmarks = result.quickBookmarks;
+                    }
                 }
 
-                // Гарантируем, что текущие актуальные настройки (window.settings) попадают в экспорт,
-                // даже если они еще ни разу не сохранялись в storage
-                const encode = (obj) => btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
-                const settingsToExport = window.settings ? Object.assign({}, window.settings) : {};
+                if (exportSnippets) {
+                    let result;
+                    if (typeof browser !== 'undefined') {
+                        result = await browserAPI.storage.local.get(['codeSnippets']);
+                    } else {
+                        result = await new Promise(resolve => browserAPI.storage.local.get(['codeSnippets'], resolve));
+                    }
+                    if (result.codeSnippets) {
+                        storageData.codeSnippets = result.codeSnippets;
+                    }
+                }
 
-                // Удаляем network_password
-                if (settingsToExport.network_password !== undefined) {
+                if (exportSettings) {
+                    const encode = (obj) => btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+                    const settingsToExport = window.settings ? Object.assign({}, window.settings) : {};
+
                     delete settingsToExport.network_password;
+                    delete settingsToExport.network_email;
+
+                    storageData.extensionSettings = encode(settingsToExport);
                 }
-                
-                storageData.extensionSettings = encode(settingsToExport);
 
                 const currentSite = this.getCurrentSite ? this.getCurrentSite() : 'unknown';
 
@@ -71,7 +97,12 @@
                 URL.revokeObjectURL(url);
 
                 this.closeModal();
-                this.messageService?.show('Все данные экспортированы', 'success');
+
+                const parts = [];
+                if (exportSettings) parts.push('настройки');
+                if (exportBookmarks) parts.push('закладки');
+                if (exportSnippets) parts.push('сниппеты');
+                this.messageService?.show(`Экспортировано: ${parts.join(', ')}`, 'success');
 
             } catch (error) {
                 console.error('Ошибка экспорта:', error);
@@ -98,6 +129,7 @@
                 }
 
                 const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
+                let importedFileHasCredentials = true;
 
                 // Для обратной совместимости (если загружают старый бэкап закладок)
                 if (importData.bookmarks && !importData.storage) {
@@ -148,6 +180,15 @@
                 }
                 // Новый формат V2.0 - полное восстановление из storage
                 else if (importData.storage) {
+                    // Проверяем до мёржа — есть ли credentials в импортируемом файле
+                    if (importData.storage.extensionSettings) {
+                        try {
+                            const decode = (str) => JSON.parse(decodeURIComponent(escape(atob(str))));
+                            const raw = decode(importData.storage.extensionSettings);
+                            importedFileHasCredentials = !!(raw.network_email && raw.network_password);
+                        } catch (e) { /* ignore */ }
+                    }
+
                     // Чтобы не затереть существующий пароль нетворка (если он есть в текущих настройках):
                     let currentStorage;
                     if (typeof browser !== 'undefined') {
@@ -164,9 +205,12 @@
                             const newSettings = decode(importData.storage.extensionSettings);
                             const oldSettings = decode(currentStorage.extensionSettings);
                             
-                            // Сохраняем текущий пароль
+                            // Сохраняем текущие credentials
                             if (oldSettings.network_password !== undefined) {
                                 newSettings.network_password = oldSettings.network_password;
+                            }
+                            if (oldSettings.network_email !== undefined) {
+                                newSettings.network_email = oldSettings.network_email;
                             }
                             importData.storage.extensionSettings = encode(newSettings);
                         } catch (e) {
@@ -184,12 +228,14 @@
                 await this.onUpdated?.();
                 this.closeModal();
 
-                this.messageService?.show('Данные успешно импортированы. Рекомендуем перезагрузить расширение.', 'success');
-                
                 // Перезагрузка страницы для обновления состояния
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
+                const params = new URLSearchParams(window.location.search);
+                if (importedFileHasCredentials === false) {
+                    params.set('importMsg', 'credentials');
+                } else {
+                    params.set('importMsg', 'success');
+                }
+                window.location.search = params.toString();
 
             } catch (error) {
                 console.error('Ошибка импорта:', error);

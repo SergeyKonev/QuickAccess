@@ -47,6 +47,19 @@ class QuickAccessPopup {
         this.settingsController = new SettingsController({
             messageService: this.messageService
         });
+
+        // Показываем сообщение после импорта (передаётся через query-параметр)
+        const params = new URLSearchParams(window.location.search);
+        const importMsg = params.get('importMsg');
+        if (importMsg) {
+            params.delete('importMsg');
+            history.replaceState(null, '', params.toString() ? `?${params}` : window.location.pathname);
+            if (importMsg === 'credentials') {
+                this.messageService.show('Импортировано. Заполните логин и пароль нетворка в настройках.', 'info');
+            } else {
+                this.messageService.show('Данные успешно импортированы.', 'success');
+            }
+        }
     }
 
     async loadCurrentSite() {

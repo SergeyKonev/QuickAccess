@@ -169,8 +169,22 @@
             <div class="modal-body">
                 <div class="export-section">
                     <h4>Экспорт</h4>
-                    <p class="section-description" id="exportDescription">Сохранить все данные расширения (настройки, закладки, сниппеты) в файл</p>
-                    <button id="exportBtn" class="btn btn-primary full-width">Экспорт всех данных</button>
+                    <p class="section-description" id="exportDescription">Выберите, что экспортировать:</p>
+                    <div class="export-checkboxes">
+                        <label class="export-checkbox-label">
+                            <input type="checkbox" id="exportSettings" checked>
+                            <span>Настройки</span>
+                        </label>
+                        <label class="export-checkbox-label">
+                            <input type="checkbox" id="exportBookmarks" checked>
+                            <span>Закладки</span>
+                        </label>
+                        <label class="export-checkbox-label">
+                            <input type="checkbox" id="exportSnippets" checked>
+                            <span>Сниппеты</span>
+                        </label>
+                    </div>
+                    <button id="exportBtn" class="btn btn-primary full-width">Экспортировать</button>
                 </div>
                 
                 <div class="divider"></div>
@@ -233,7 +247,7 @@
     <!-- Уведомления -->
     <div id="message" class="message"></div>
 
-    <script src="../shared/settings.js"></script>
+    <script src="../shared/settings-schema.js"></script>
     <script src="../shared/utils.js"></script>
     <script src="services/browser.js"></script>
     <script src="../shared/settings-loader.js"></script>

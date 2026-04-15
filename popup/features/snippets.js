@@ -12,7 +12,7 @@ class SnippetManager {
         this.isLoaded = false;
         
         // Проверяем доступность settings при инициализации
-        if (typeof settings === 'undefined') {
+        if (!window.settings) {
             console.warn('Settings не загружены при инициализации SnippetManager');
         }
         
@@ -323,17 +323,17 @@ class SnippetManager {
     async executeCode(code) {
         try {
             // Проверяем доступность settings
-            if (typeof settings === 'undefined') {
-                this.showMessage('Настройки (settings.js) не загружены', 'error');
+            if (!window.settings) {
+                this.showMessage('Настройки (настройках) не загружены', 'error');
                 console.error('Settings не загружены для выполнения кода');
                 return;
             }
 
             // Получаем путь из настроек
-            const executionPath = settings?.php_execution_path || '/admin/debug.php';
+            const executionPath = window.settings?.php_execution_path || '/admin/debug.php';
             
             if (!executionPath) {
-                this.showMessage('Путь выполнения не настроен в settings.js', 'error');
+                this.showMessage('Путь выполнения не настроен в настройках', 'error');
                 console.error('php_execution_path не настроен в settings');
                 return;
             }
@@ -365,8 +365,6 @@ class SnippetManager {
             
             // Формируем URL для выполнения
             const executionUrl = `${currentProtocol}//${this.currentSite}${executionPath}?PHPCode=y&CODE=${encodedCode}`;
-            
-            console.log('URL выполнения:', executionUrl);
             
             // Открываем новую вкладку рядом с текущей, не переключаясь на неё
             const createOptions = {

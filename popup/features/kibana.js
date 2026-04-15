@@ -6,7 +6,7 @@ class KibanaManager {
         this.messageTimeout = null;
         
         // Проверяем доступность settings при инициализации
-        if (typeof settings === 'undefined') {
+        if (!window.settings) {
             console.warn('Settings не загружены при инициализации KibanaManager');
         }
         
@@ -104,27 +104,24 @@ class KibanaManager {
     async openKibana(urlKey, displayName) {
         try {
             // Проверяем доступность settings
-            if (typeof settings === 'undefined') {
-                this.showMessage('Настройки (settings.js) не загружены', 'error');
+            if (!window.settings) {
+                this.showMessage('Настройки (настройках) не загружены', 'error');
                 console.error('Settings не загружены для открытия Kibana');
                 return;
             }
 
             // Получаем URL Kibana из настроек
-            const kibanaUrl = settings?.[urlKey];
+            const kibanaUrl = window.settings?.[urlKey];
             
             if (!kibanaUrl) {
-                this.showMessage(`URL ${displayName} не настроен в settings.js`, 'error');
+                this.showMessage(`URL ${displayName} не настроен в настройках`, 'error');
                 console.error(`${urlKey} не настроен в settings`);
                 return;
             }
 
             // Подставляем текущий домен в URL - заменяем ВСЕ вхождения
             const finalKibanaUrl = kibanaUrl.replace(/{portalUrl}/g, encodeURIComponent(this.currentSite));
-            
-            console.log(`Открытие ${displayName} для портала:`, this.currentSite);
-            console.log(`URL ${displayName}:`, finalKibanaUrl);
-            
+
             // Открываем новую вкладку с Kibana
             if (typeof browser !== 'undefined') {
                 await this.browserAPI.tabs.create({url: finalKibanaUrl});

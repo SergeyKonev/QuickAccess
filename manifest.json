@@ -39,7 +39,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["shared/settings.js"],
+      "resources": ["shared/settings-schema.js"],
       "matches": ["<all_urls>"]
     }
   ]

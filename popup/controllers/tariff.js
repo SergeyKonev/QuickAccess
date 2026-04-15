@@ -8,7 +8,7 @@
             const selectElement = document.getElementById('tariffCouponSelect');
             if (!selectElement) return;
 
-            const coupons = settings?.license_coupons || [];
+            const coupons = window.settings?.license_coupons || [];
             selectElement.innerHTML = '';
 
             if (!coupons.length) {
@@ -87,7 +87,7 @@
         async marketSubscription(action) {
             const actionName = action === 1 ? 'установки' : 'снятия';
 
-            if (!settings?.market_subscription_url || !settings?.network_email || !settings?.network_password) {
+            if (!window.settings?.market_subscription_url || !window.settings?.network_email || !window.settings?.network_password) {
                 this.messageService?.show('Настройки подписки маркета не заполнены (вкладка ⚙)', 'error');
                 return;
             }
@@ -103,16 +103,21 @@
                 const hostname = new URL(tabUrl).hostname;
                 const portalUri = `https://${hostname}/`;
 
+                if (!isSafeUrl(window.settings.market_subscription_url)) {
+                    this.messageService?.show('Небезопасный URL подписки маркета', 'error');
+                    return;
+                }
+
                 const result = await new Promise((resolve) => {
                     chrome.runtime.sendMessage({
                         type: 'MARKET_SUBSCRIPTION',
-                        url: settings.market_subscription_url,
+                        url: window.settings.market_subscription_url,
                         body: {
                             PortalUri: portalUri,
                             Action: action,
                             Requester: {
-                                Email: settings.network_email,
-                                Password: settings.network_password
+                                Email: window.settings.network_email,
+                                Password: window.settings.network_password
                             }
                         }
                     }, resolve);

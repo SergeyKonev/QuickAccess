@@ -24,21 +24,18 @@ class ControllerOpener {
 
     async openController() {
         try {
-            console.log('Открытие контроллера...');
-            
             // Проверяем доступность settings
-            if (typeof settings === 'undefined') {
-                this.printError('Настройки (settings.js) не загружены');
+            if (!window.settings) {
+                this.printError('Настройки (настройках) не загружены');
                 throw new Error('Настройки не загружены');
             }
 
-            // Используем настройки из файла settings.js
-            const controllerUrlWithFilter = settings.controller_url_with_filter;
-            console.log('URL контроллера:', controllerUrlWithFilter);
-            
+            // Используем настройки из файла настройках
+            const controllerUrlWithFilter = window.settings.controller_url_with_filter;
+
             if (!controllerUrlWithFilter) {
-                this.printError('URL контроллера не настроен в settings.js');
-                throw new Error('URL контроллера не настроен в settings.js');
+                this.printError('URL контроллера не настроен в настройках');
+                throw new Error('URL контроллера не настроен в настройках');
             }
 
             // Проверяем доступность utils функций
@@ -58,8 +55,7 @@ class ControllerOpener {
             }
 
             const activeTab = tabs[0];
-            console.log('Активная вкладка:', activeTab);
-            
+
             if (!activeTab?.url) {
                 this.printError('Не удалось получить URL текущей вкладки');
                 throw new Error('Не удалось получить URL текущей вкладки');
@@ -67,8 +63,7 @@ class ControllerOpener {
 
             // Используем функцию из utils.js
             const portalLink = getPortalLinkFromTab(activeTab.url);
-            console.log('Портал:', portalLink);
-            
+
             if (!portalLink) {
                 this.printError('Не удалось извлечь домен портала из URL: ' + activeTab.url);
                 throw new Error('Не удалось извлечь домен портала');
@@ -76,8 +71,7 @@ class ControllerOpener {
 
             // Используем функцию из utils.js
             const isTestPortal = isPortalForTest(portalLink);
-            console.log('Тестовый портал?', isTestPortal);
-            
+
             if (!isTestPortal) {
                 const errorMsg = `Портал ${portalLink} не тестовый, зачем тебе контроллер? :)`;
                 this.printError(errorMsg);
@@ -86,8 +80,7 @@ class ControllerOpener {
 
             // Формируем URL контроллера с подставленным порталом
             const controllerUrlWithPortalFilter = controllerUrlWithFilter.replace('{portalUri}', encodeURIComponent(portalLink));
-            console.log('Финальный URL контроллера:', controllerUrlWithPortalFilter);
-            
+
             // Открываем новую вкладку с контроллером в инкогнито
             if (typeof browser !== 'undefined') {
                 await this.browserAPI.windows.create({ incognito: true, url: controllerUrlWithPortalFilter });
@@ -95,7 +88,6 @@ class ControllerOpener {
                 this.browserAPI.windows.create({ incognito: true, url: controllerUrlWithPortalFilter });
             }
 
-            console.log('Контроллер успешно открыт');
             return {
                 success: true,
                 message: `Контроллер открыт для портала: ${portalLink}`
@@ -113,12 +105,12 @@ class ControllerOpener {
 
     // Метод для получения текущего URL контроллера из настроек
     getControllerUrl() {
-        return settings?.controller_url_with_filter || '';
+        return window.settings?.controller_url_with_filter || '';
     }
 
     // Метод для получения купонов лицензий
     getLicenseCoupons() {
-        return settings?.license_coupons || [];
+        return window.settings?.license_coupons || [];
     }
 
     // Метод-обертка для функции из utils.js (для совместимости API)
@@ -143,7 +135,6 @@ if (typeof module !== 'undefined' && module.exports) {
 const controllerBtn = document.getElementById('openControllerLink');
 if (controllerBtn) {
     controllerBtn.addEventListener('click', () => {
-        console.log('Кнопка контроллера нажата'); // Отладочный вывод
         new ControllerOpener().openController();
     });
 } else {

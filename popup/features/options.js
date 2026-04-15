@@ -4,7 +4,7 @@ class OptionsManager {
         this.currentSite = 'localhost';
         
         // Проверяем доступность settings при инициализации
-        if (typeof settings === 'undefined') {
+        if (!window.settings) {
             console.warn('Settings не загружены при инициализации OptionsManager');
         }
         
@@ -245,12 +245,12 @@ class OptionsManager {
 
     async executeAndGetResult(code) {
         try {
-            if (typeof settings === 'undefined') {
-                this.showMessage('Настройки (settings.js) не загружены', 'error');
+            if (!window.settings) {
+                this.showMessage('Настройки (настройках) не загружены', 'error');
                 return null;
             }
             
-            const executionPath = settings?.php_execution_path || '/admin/debug.php';
+            const executionPath = window.settings?.php_execution_path || '/admin/debug.php';
             
             let currentTabId = null;
             let currentSiteUrl = '';
@@ -280,7 +280,7 @@ class OptionsManager {
             
             const encodedCode = encodeURIComponent(code);
             const executionUrl = `${currentSiteUrl}${executionPath}?PHPCode=y&CODE=${encodedCode}`;
-            
+
             // Выполняем код через создание скрытого iframe на текущей странице.
             // Это обходит ограничения CORS, не требует явных разрешений в manifest.json
             // для всех хостов и работает как загрузка отдельной страницы.

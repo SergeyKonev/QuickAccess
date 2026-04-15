@@ -1,9 +1,9 @@
-// Загрузка настроек из chrome.storage.local с фолбэком на дефолты из settings.js
+// Загрузка настроек из chrome.storage.local с фолбэком на дефолты из settings-schema.js
 // Данные в storage хранятся в base64-кодировке (обфускация от случайного просмотра)
 (function () {
     const STORAGE_KEY = 'extensionSettings';
 
-    // Дефолтные значения берутся из settings.js (загружается раньше)
+    // Дефолтные значения берутся из settings-schema.js (загружается раньше)
     const defaults = window.settings ? JSON.parse(JSON.stringify(window.settings)) : {};
 
     function encode(obj) {
