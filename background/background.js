@@ -4,6 +4,9 @@ const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
 browserAPI.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (!message?.type) return;
 
+    // Принимаем сообщения только от самого расширения
+    if (sender.id !== browserAPI.runtime.id) return;
+
     if (message.type === 'FETCH_ETALON_XML') {
         fetch(ETALON_URL, { credentials: 'omit' })
             .then((response) => {
