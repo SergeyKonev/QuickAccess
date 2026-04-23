@@ -5,6 +5,8 @@ class QuickAccessPopup {
         this.currentUrl = '';
         this.currentProtocol = 'https:';
         this.currentTabIndex = 0;
+        this.popupStateKey = 'quickAccessPopupState';
+        this.defaultTab = 'bookmarks';
 
         this.messageService = new MessageService();
         this.bookmarkStore = new BookmarkStore();
@@ -47,6 +49,8 @@ class QuickAccessPopup {
         this.settingsController = new SettingsController({
             messageService: this.messageService
         });
+
+        await this.restoreLastTab();
 
         // Показываем сообщение после импорта (передаётся через query-параметр)
         const params = new URLSearchParams(window.location.search);
@@ -266,7 +270,37 @@ class QuickAccessPopup {
         this.bookmarkListView.render(this.bookmarkStore.getAll());
     }
 
-    switchTab(tabName) {
+    async loadPopupState() {
+        try {
+            const result = await window.qaBrowser.storageGet([this.popupStateKey]);
+            return result?.[this.popupStateKey] || {};
+        } catch (error) {
+            console.error('Ошибка загрузки состояния popup:', error);
+            return {};
+        }
+    }
+
+    async savePopupState(nextState) {
+        try {
+            const currentState = await this.loadPopupState();
+            await window.qaBrowser.storageSet({
+                [this.popupStateKey]: {
+                    ...currentState,
+                    ...nextState
+                }
+            });
+        } catch (error) {
+            console.error('Ошибка сохранения состояния popup:', error);
+        }
+    }
+
+    async restoreLastTab() {
+        const state = await this.loadPopupState();
+        const tabName = state.lastActiveTab || this.defaultTab;
+        this.switchTab(tabName, { persist: false });
+    }
+
+    switchTab(tabName, { persist = true } = {}) {
         const tabButtons = document.querySelectorAll('.tab-button');
         tabButtons.forEach(button => {
             button.classList.remove('active');
@@ -286,6 +320,10 @@ class QuickAccessPopup {
 
         if (activeContent) {
             activeContent.classList.add('active');
+        }
+
+        if (persist && activeButton && activeContent) {
+            this.savePopupState({ lastActiveTab: tabName });
         }
     }
 }

@@ -2,6 +2,9 @@ class OptionsManager {
     constructor() {
         this.browserAPI = typeof browser !== 'undefined' ? browser : chrome;
         this.currentSite = 'localhost';
+        this.presets = [];
+        this.nextPresetId = 1;
+        this.savedValues = {};
         
         // Проверяем доступность settings при инициализации
         if (!window.settings) {
@@ -44,10 +47,18 @@ class OptionsManager {
         try {
             let result;
             if (typeof browser !== 'undefined') {
-                result = await this.browserAPI.storage.local.get(['bitrixOptions']);
+                result = await this.browserAPI.storage.local.get([
+                    'bitrixOptions',
+                    'bitrixOptionPresets',
+                    'bitrixOptionValues'
+                ]);
             } else {
                 result = await new Promise((resolve) => {
-                    this.browserAPI.storage.local.get(['bitrixOptions'], resolve);
+                    this.browserAPI.storage.local.get([
+                        'bitrixOptions',
+                        'bitrixOptionPresets',
+                        'bitrixOptionValues'
+                    ], resolve);
                 });
             }
             
@@ -56,27 +67,14 @@ class OptionsManager {
             if (options.name) document.getElementById('optionName').value = options.name;
             if (options.value) document.getElementById('optionValue').value = options.value;
 
-            try {
-                let presetsResult;
-                if (typeof browser !== 'undefined') {
-                    presetsResult = await this.browserAPI.storage.local.get(['bitrixOptionPresets']);
-                } else {
-                    presetsResult = await new Promise((resolve) => {
-                        this.browserAPI.storage.local.get(['bitrixOptionPresets'], resolve);
-                    });
-                }
-                this.presets = presetsResult.bitrixOptionPresets || [];
-                if (this.presets.length > 0) {
-                    this.nextPresetId = Math.max(...this.presets.map(p => p.id || 0)) + 1;
-                } else {
-                    this.nextPresetId = 1;
-                }
-                this.renderPresets();
-            } catch (err) {
-                console.error('Ошибка загрузки пресетов:', err);
-                this.presets = [];
-                this.nextPresetId = 1;
-            }
+            this.presets = Array.isArray(result.bitrixOptionPresets) ? result.bitrixOptionPresets : [];
+            this.nextPresetId = this.presets.length > 0
+                ? Math.max(...this.presets.map(p => p.id || 0)) + 1
+                : 1;
+            this.savedValues = this.normalizeSavedValues(result.bitrixOptionValues);
+
+            this.renderPresets();
+            this.renderValueSelector();
         } catch (error) {
             console.error('Ошибка загрузки состояния опций:', error);
         }
@@ -104,14 +102,41 @@ class OptionsManager {
     bindEvents() {
         const getBtn = document.getElementById('getOptionBtn');
         const setBtn = document.getElementById('setOptionBtn');
+        const deleteBtn = document.getElementById('deleteOptionBtn');
         const savePresetBtn = document.getElementById('saveOptionPresetBtn');
-        const inputs = ['optionModule', 'optionName', 'optionValue'];
+        const optionModuleInput = document.getElementById('optionModule');
+        const optionNameInput = document.getElementById('optionName');
+        const optionValueInput = document.getElementById('optionValue');
+        const optionValuePicker = document.getElementById('optionValuePicker');
 
-        inputs.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.addEventListener('input', () => this.saveState());
+        [optionModuleInput, optionNameInput].forEach((el) => {
+            el?.addEventListener('input', () => {
+                this.saveState();
+                this.renderValueSelector();
+            });
+        });
+
+        optionValueInput?.addEventListener('input', () => {
+            this.saveState();
+            this.renderValueSelector(true);
+        });
+
+        optionValueInput?.addEventListener('focus', () => {
+            this.renderValueSelector(true);
+        });
+
+        optionValueInput?.addEventListener('click', () => {
+            this.renderValueSelector(true);
+        });
+
+        optionValueInput?.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                this.hideValueSelector();
             }
+        });
+
+        [optionModuleInput, optionNameInput, optionValueInput].forEach((el) => {
+            el?.addEventListener('paste', (event) => this.handleOptionPaste(event));
         });
 
         if (getBtn) {
@@ -122,9 +147,19 @@ class OptionsManager {
             setBtn.addEventListener('click', () => this.handleSetOption());
         }
 
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', () => this.handleDeleteOption());
+        }
+
         if (savePresetBtn) {
             savePresetBtn.addEventListener('click', () => this.savePreset());
         }
+
+        document.addEventListener('click', (event) => {
+            if (optionValuePicker && !optionValuePicker.contains(event.target)) {
+                this.hideValueSelector();
+            }
+        });
     }
 
     showMessage(text, type = 'info') {
@@ -150,10 +185,208 @@ class OptionsManager {
         }
     }
 
+    async saveSavedValues() {
+        try {
+            if (typeof browser !== 'undefined') {
+                await this.browserAPI.storage.local.set({bitrixOptionValues: this.savedValues});
+            } else {
+                await new Promise((resolve) => {
+                    this.browserAPI.storage.local.set({bitrixOptionValues: this.savedValues}, resolve);
+                });
+            }
+        } catch (error) {
+            console.error('Ошибка сохранения значений опций:', error);
+        }
+    }
+
+    normalizeSavedValues(rawValues) {
+        if (!rawValues || typeof rawValues !== 'object') {
+            return {};
+        }
+
+        return Object.entries(rawValues).reduce((acc, [key, values]) => {
+            if (!Array.isArray(values)) {
+                return acc;
+            }
+
+            const uniqueValues = [...new Set(values.filter(value => typeof value === 'string'))];
+            if (uniqueValues.length > 0) {
+                acc[key] = uniqueValues;
+            }
+            return acc;
+        }, {});
+    }
+
+    getOptionKey(module, name) {
+        if (!module || !name) {
+            return '';
+        }
+        return `${module}::${name}`;
+    }
+
+    getCurrentOptionData() {
+        return {
+            module: document.getElementById('optionModule')?.value.trim() || '',
+            name: document.getElementById('optionName')?.value.trim() || '',
+            value: document.getElementById('optionValue')?.value || ''
+        };
+    }
+
+    getCurrentSavedValues() {
+        const { module, name } = this.getCurrentOptionData();
+        const key = this.getOptionKey(module, name);
+        return key ? (this.savedValues[key] || []) : [];
+    }
+
+    unescapePhpString(value, quote) {
+        if (!value) {
+            return '';
+        }
+
+        const quotePattern = new RegExp(`\\\\${quote}`, 'g');
+        return value
+            .replace(/\\\\/g, '\\')
+            .replace(quotePattern, quote);
+    }
+
+    parseOptionExpression(rawValue) {
+        if (!rawValue) {
+            return null;
+        }
+
+        const normalizedValue = rawValue.trim();
+        const optionRegexp = /^(?:COption::SetOptionString|\\?Bitrix\\Main\\Config\\Option::set)\(\s*(['"])((?:\\.|(?!\1)[\s\S])*)\1\s*,\s*(['"])((?:\\.|(?!\3)[\s\S])*)\3\s*,\s*(['"])((?:\\.|(?!\5)[\s\S])*)\5(?:\s*,[\s\S]*)?\)\s*;?\s*$/;
+        const match = normalizedValue.match(optionRegexp);
+        if (!match) {
+            return null;
+        }
+
+        return {
+            module: this.unescapePhpString(match[2], match[1]),
+            name: this.unescapePhpString(match[4], match[3]),
+            value: this.unescapePhpString(match[6], match[5])
+        };
+    }
+
+    applyParsedOption(parsedOption) {
+        if (!parsedOption) {
+            return;
+        }
+
+        document.getElementById('optionModule').value = parsedOption.module;
+        document.getElementById('optionName').value = parsedOption.name;
+        document.getElementById('optionValue').value = parsedOption.value;
+        this.hideValueSelector();
+        this.renderValueSelector();
+        this.saveState();
+        this.showMessage('Опция разложена по полям', 'success');
+    }
+
+    handleOptionPaste(event) {
+        const pastedText = event.clipboardData?.getData('text');
+        const parsedOption = this.parseOptionExpression(pastedText);
+        if (!parsedOption) {
+            return;
+        }
+
+        event.preventDefault();
+        this.applyParsedOption(parsedOption);
+    }
+
+    async removeSavedValue(valueToRemove) {
+        const { module, name } = this.getCurrentOptionData();
+        const key = this.getOptionKey(module, name);
+        if (!key) {
+            return;
+        }
+
+        const values = this.savedValues[key] || [];
+        const nextValues = values.filter((value) => value !== valueToRemove);
+
+        if (nextValues.length > 0) {
+            this.savedValues[key] = nextValues;
+        } else {
+            delete this.savedValues[key];
+        }
+
+        await this.saveSavedValues();
+        this.renderValueSelector(true);
+        this.showMessage('Значение удалено', 'success');
+    }
+
+    renderValueSelector(forceOpen = false) {
+        const dropdown = document.getElementById('optionSavedValues');
+        const picker = document.getElementById('optionValuePicker');
+        const input = document.getElementById('optionValue');
+        if (!dropdown || !picker || !input) return;
+
+        const { module, name } = this.getCurrentOptionData();
+        const key = this.getOptionKey(module, name);
+        const values = key ? (this.savedValues[key] || []) : [];
+
+        dropdown.replaceChildren();
+
+        if (!key || values.length === 0) {
+            this.hideValueSelector();
+            return;
+        }
+
+        values.forEach((savedValue) => {
+            const option = document.createElement('div');
+            option.className = 'option-value-option';
+
+            const label = document.createElement('div');
+            label.className = 'option-value-option-label';
+            label.textContent = savedValue;
+            label.title = savedValue;
+            label.addEventListener('mousedown', (event) => {
+                event.preventDefault();
+                this.applySelectedValue(savedValue);
+            });
+
+            const deleteButton = document.createElement('button');
+            deleteButton.type = 'button';
+            deleteButton.className = 'option-value-delete';
+            deleteButton.title = 'Удалить значение';
+            deleteButton.textContent = '×';
+            deleteButton.addEventListener('mousedown', async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                await this.removeSavedValue(savedValue);
+            });
+
+            option.appendChild(label);
+            option.appendChild(deleteButton);
+            dropdown.appendChild(option);
+        });
+
+        if (forceOpen) {
+            picker.classList.add('open');
+        }
+    }
+
+    hideValueSelector() {
+        document.getElementById('optionValuePicker')?.classList.remove('open');
+    }
+
+    syncValueSelectorSelection() {
+        this.renderValueSelector();
+    }
+
+    applySelectedValue(value) {
+        const valueInput = document.getElementById('optionValue');
+        if (!valueInput) return;
+
+        valueInput.value = value;
+        this.saveState();
+        this.hideValueSelector();
+        this.showMessage('Значение подставлено', 'success');
+    }
+
     async savePreset() {
         const module = document.getElementById('optionModule').value.trim();
         const name = document.getElementById('optionName').value.trim();
-        const value = document.getElementById('optionValue').value.trim();
+        const value = document.getElementById('optionValue').value;
 
         if (!module || !name) {
             this.showMessage('Укажите модуль и название для сохранения', 'error');
@@ -175,6 +408,15 @@ class OptionsManager {
         }
         
         await this.savePresets();
+        if (value) {
+            const key = this.getOptionKey(module, name);
+            const existingValues = this.savedValues[key] || [];
+            if (!existingValues.includes(value)) {
+                this.savedValues[key] = [value, ...existingValues];
+                await this.saveSavedValues();
+            }
+            this.renderValueSelector();
+        }
         this.renderPresets();
     }
 
@@ -202,7 +444,6 @@ class OptionsManager {
             <div class="snippet-item" data-preset-id="${preset.id}">
                 <div class="snippet-content" style="cursor: pointer;" title="Подставить опцию">
                     <div class="snippet-name">${this.escapeHtml(preset.module)} / ${this.escapeHtml(preset.name)}</div>
-                    ${preset.value ? `<div class="snippet-preview" style="color: #888; font-size: 11px;">${this.escapeHtml(preset.value)}</div>` : ''}
                 </div>
                 <div class="snippet-actions">
                     <button class="btn-delete" title="Удалить">×</button>
@@ -223,6 +464,7 @@ class OptionsManager {
                     if (preset.value !== undefined) {
                         document.getElementById('optionValue').value = preset.value;
                     }
+                    this.renderValueSelector();
                     this.saveState();
                     this.showMessage('Опция подставлена', 'success');
                 });
@@ -417,6 +659,7 @@ class OptionsManager {
             }
             
             document.getElementById('optionValue').value = actualValue.trim();
+            this.hideValueSelector();
             this.saveState();
             this.showMessage('Значение получено', 'success');
         } else if (result) {
@@ -449,6 +692,38 @@ class OptionsManager {
             this.showMessage('Опция успешно обновлена', 'success');
         } else if (result) {
             this.showMessage('Ошибка сервера: обновление не удалось', 'error');
+        }
+    }
+
+    async handleDeleteOption() {
+        const module = document.getElementById('optionModule').value.trim();
+        const name = document.getElementById('optionName').value.trim();
+        const deleteBtn = document.getElementById('deleteOptionBtn');
+
+        if (!module || !name) {
+            this.showMessage('Укажите модуль и название опции', 'error');
+            return;
+        }
+
+        if (!confirm(`Удалить опцию "${name}" у модуля "${module}" на портале?`)) {
+            return;
+        }
+
+        const safeModule = module.replace(/(['"\\])/g, '\\$1');
+        const safeName = name.replace(/(['"\\])/g, '\\$1');
+        const code = `\\Bitrix\\Main\\Config\\Option::delete('${safeModule}', ['name' => '${safeName}']); echo '---R' . 'ES---OK---EN' . 'DRES---';`;
+
+        if (deleteBtn) deleteBtn.textContent = '...';
+        const result = await this.executeAndGetResult(code);
+        if (deleteBtn) deleteBtn.textContent = 'Удалить';
+
+        if (result !== null && !result.startsWith('Error:')) {
+            document.getElementById('optionValue').value = '';
+            this.hideValueSelector();
+            this.saveState();
+            this.showMessage('Опция удалена на портале', 'success');
+        } else if (result) {
+            this.showMessage('Ошибка сервера: удаление не удалось', 'error');
         }
     }
 }
